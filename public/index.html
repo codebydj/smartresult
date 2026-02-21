@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SmartResult</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>SmartResult</h1>
+
+        <form id="resultForm">
+          <label for="pin">Student PIN</label>
+          <input
+            type="text"
+            id="pin"
+            name="pin"
+            placeholder="e.g. 123456"
+            required />
+
+          <label for="semester">Semester</label>
+          <select id="semester" name="semester">
+            <option value="">All</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+
+          <div class="actions">
+            <button type="submit" id="submitBtn">Get Result</button>
+            <div id="spinner" class="spinner" aria-hidden="true"></div>
+          </div>
+        </form>
+
+        <div id="result"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

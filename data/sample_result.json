@@ -1,0 +1,57 @@
+{
+  "studentName": "John Doe",
+  "rollNumber": "SR2021001",
+  "registrationNumber": "SR2021001",
+  "semesters": [
+    {
+      "semester": "1",
+      "sgpa": "8.10",
+      "cgpa": "8.10",
+      "subjects": [
+        {
+          "subjectCode": "CS101",
+          "subjectName": "Intro to CS",
+          "grade": "S",
+          "gradePoint": "10",
+          "credit": "4",
+          "status": "Pass",
+          "points": "40"
+        },
+        {
+          "subjectCode": "MA101",
+          "subjectName": "Calculus",
+          "grade": "A",
+          "gradePoint": "9",
+          "credit": "4",
+          "status": "Pass",
+          "points": "36"
+        }
+      ]
+    },
+    {
+      "semester": "2",
+      "sgpa": "8.40",
+      "cgpa": "8.25",
+      "subjects": [
+        {
+          "subjectCode": "CS102",
+          "subjectName": "Data Structures",
+          "grade": "S",
+          "gradePoint": "10",
+          "credit": "4",
+          "status": "Pass",
+          "points": "40"
+        },
+        {
+          "subjectCode": "PH101",
+          "subjectName": "Physics",
+          "grade": "B",
+          "gradePoint": "8",
+          "credit": "3",
+          "status": "Pass",
+          "points": "24"
+        }
+      ]
+    }
+  ]
+}
