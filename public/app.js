@@ -5,6 +5,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultContainer = document.getElementById("resultContainer");
   const loadingOverlay = document.getElementById("loadingOverlay");
 
+  // CONFIGURATION: API BASE URL
+  // If hosting on GitHub Pages, set this to your deployed backend URL (e.g., "https://your-app.onrender.com")
+  // If hosting everything together (Docker/Local), leave it as an empty string ""
+  const API_BASE_URL = "";
+
   // Store chart instances to destroy them before re-rendering
   let chartInstances = {
     sgpa: null,
@@ -58,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       try {
         const res = await fetch(
-          `/api/v1/result?pin=${encodeURIComponent(pin)}`,
+          `${API_BASE_URL}/api/v1/result?pin=${encodeURIComponent(pin)}`,
         );
         const data = await res.json();
 
@@ -115,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           <!-- Action Buttons -->
           <div class="mb-4">
-            <a href="/api/v1/result/${resultData.pin}/download-pdf" class="btn btn-outline-primary" target="_blank">
+            <a href="${API_BASE_URL}/api/v1/result/${resultData.pin}/download-pdf" class="btn btn-outline-primary" target="_blank">
               📥 Download PDF
             </a>
           </div>
@@ -372,7 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadFooterStats() {
     try {
-      const res = await fetch("/api/v1/result/stats/public");
+      const res = await fetch(`${API_BASE_URL}/api/v1/result/stats/public`);
       if (res.ok) {
         const data = await res.json();
         const footer = document.createElement("footer");
