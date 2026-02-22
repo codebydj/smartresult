@@ -11,8 +11,11 @@ async function getResult(pin) {
         "--disable-dev-shm-usage",
         "--disable-gpu",
         "--window-size=1920,1080",
+        "--single-process",
+        "--no-zygote",
       ],
       ignoreHTTPSErrors: true,
+      dumpio: true,
     };
 
     browser = await Promise.race([
