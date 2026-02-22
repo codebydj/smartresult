@@ -10,23 +10,28 @@ async function getResult(pin) {
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
+        "--window-size=1920,1080",
       ],
     };
 
     browser = await Promise.race([
       puppeteer.launch(launchOptions),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Puppeteer launch timeout")), 30000),
+        setTimeout(() => reject(new Error("Puppeteer launch timeout")), 60000),
       ),
     ]);
 
     const page = await browser.newPage();
-    await page.setDefaultTimeout(30000);
-    await page.setDefaultNavigationTimeout(30000);
+    
+    // Set a real User-Agent to avoid being blocked
+    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+    
+    await page.setDefaultTimeout(60000);
+    await page.setDefaultNavigationTimeout(60000);
 
     await page.goto("https://www.student.apamaravathi.in/mymarks.php", {
       waitUntil: "networkidle2",
-      timeout: 30000,
+      timeout: 60000,
     });
 
     await page.waitForSelector('input[name="rno"]');
@@ -35,10 +40,15 @@ async function getResult(pin) {
 
     await Promise.all([
       page.click('input[type="submit"]'),
-      page.waitForNavigation({ waitUntil: "networkidle2" }),
+      page.waitForNavigation({ waitUntil: "networkidle2", timeout: 60000 }),
     ]);
 
-    await page.waitForSelector("body");
+    // Wait specifically for a table to ensure results are loaded
+    try {
+      await page.waitForSelector("table", { timeout: 10000 });
+    } catch (e) {
+      console.log("⚠️ No table found immediately, attempting to parse anyway...");
+    }
 
     const data = await page.evaluate(() => {
       const clean = (s) => (s || "").replace(/\s+/g, " ").trim();

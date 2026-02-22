@@ -8,7 +8,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // CONFIGURATION: API BASE URL
   // If hosting on GitHub Pages, set this to your deployed backend URL (e.g., "https://your-app.onrender.com")
   // If hosting everything together (Docker/Local), leave it as an empty string ""
-  const API_BASE_URL = "https://smartresult-7z5x.onrender.com";
+  // Auto-detect: If running on localhost, use local backend. If on GitHub Pages, use Render backend.
+  const API_BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+      ? ""
+      : "https://smartresult-7z5x.onrender.com";
 
   // Store chart instances to destroy them before re-rendering
   let chartInstances = {
