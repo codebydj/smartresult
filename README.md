@@ -1,67 +1,50 @@
-# SmartResult — Academic Performance Dashboard
+# SmartResult 📊
 
-This repository contains a Node.js + Express backend and a React (Vite) frontend to parse HTML result pages and render an interactive student performance dashboard.
+SmartResult is a student-focused result portal that aggregates academic results and provides insightful performance analytics. It simplifies the process of checking results by offering a clean interface, trend visualization, and PDF export capabilities.
 
-Summary
+## 🌟 Key Features
 
-- Backend: Express, Puppeteer, Cheerio, optional MongoDB (Mongoose)
-- Frontend: React + Vite, Tailwind CSS, Chart.js
+- **Instant Result Search**: Retrieve your academic results using your PIN or Roll Number.
+- **Performance Analytics**: Visualize your academic progress with an interactive **SGPA Performance** chart.
+- **PDF Download**: Generate and download a formatted PDF of your result card for offline use.
+- **Semester Breakdown**: View detailed grades, credits, and points for every semester.
+- **Mobile Friendly**: A responsive design that works seamlessly on smartphones and tablets.
+- **Live Dashboard**: Displays the current date and time for user convenience.
 
-Quick start (development)
+## 📖 How to Use This Website
 
-1. Backend
+1. **Access the Portal**: Open the website in your browser.
+2. **Enter Credentials**: Locate the search box and enter your **PIN** (e.g., `248h5a0513`).
+3. **Search**: Click the **"Get Result"** button.
+4. **View Results**:
+   - The dashboard will display your **Name**, **Roll Number**, and **Overall CGPA**.
+   - Scroll down to see a semester-by-semester breakdown of your subjects and grades.
+5. **Analyze Trends**: Look at the **SGPA Performance** graph to see how your GPA has changed over time.
+6. **Download Copy**: Click the **"📥 Download PDF"** button to save a copy of your results.
 
-```powershell
-cd D:\smartresult
-npm install
-# optional: install rate limit middleware
-npm install express-rate-limit
-# (optional) set MONGODB_URI in .env to enable DB persistence
-npm run dev    # starts server on http://localhost:3000
-```
+## 🛠️ Technology Stack
 
-2. Frontend
+- **Frontend**: HTML, Bootstrap 5, JavaScript (Chart.js for analytics).
+- **Backend**: Node.js, Express.js.
+- **Database**: MongoDB (caches results for performance).
+- **Scraping Engine**: Puppeteer (fetches data from the official source).
+- **PDF Generation**: PDFKit.
 
-```powershell
-cd D:\smartresult\client
-npm install
-npm run dev    # starts Vite on http://localhost:5173
-```
+## 🚀 Installation & Setup
 
-APIs
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/codebydj/smartresult.git
+   ```
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+3. **Run Locally**
+   ```bash
+   npm run dev
+   ```
 
-- `POST /api/fetch` — body: `{ "pin": "REG123" }` (uses scraper)
-- `POST /api/parse` — body: `{ "html": "<html>...</html>" }` (parses raw HTML)
+---
 
-Publishing to GitHub
-
-Use one of the two methods below to create a remote and push.
-
-1. Using GitHub CLI (`gh`) — easiest if authenticated:
-
-```powershell
-cd D:\smartresult
-git init
-git add .
-git commit -m "Initial commit: SmartResult dashboard"
-gh repo create my-username/smartresult --public --source=. --remote=origin --push
-```
-
-2. Manual (create repo on github.com then push):
-
-```powershell
-cd D:\smartresult
-git init
-git add .
-git commit -m "Initial commit: SmartResult dashboard"
-git remote add origin https://github.com/<your-username>/<repo-name>.git
-git branch -M main
-git push -u origin main
-```
-
-Notes
-
-- If Puppeteer has issues in your environment, launch with `--no-sandbox` flags in `services/scraperService.js`.
-- To serve the built frontend from Express, build the client and copy `client/dist` into `public` or update Express static path.
-
-If you want, I can create the GitHub repo for you now — provide either `gh` CLI access on this machine or a GitHub Personal Access Token and the desired repo name.
+_Developed for students to easily track and analyze their academic journey._
