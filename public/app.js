@@ -321,44 +321,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     });
 
-    // 4. Render CGPA Chart
-    const ctxCGPA = document.getElementById("cgpaChart").getContext("2d");
-    chartInstances.cgpa = new Chart(ctxCGPA, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: "CGPA",
-            data: cgpaData,
-            borderColor: "#0ea5e9", // Sky Blue
-            backgroundColor: "rgba(14, 165, 233, 0.1)",
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: "#ffffff",
-            pointBorderColor: "#0ea5e9",
-            pointRadius: 4,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 10,
-            grid: { borderDash: [2, 4], color: "#e5e7eb" },
-          },
-          x: { grid: { display: false } },
-        },
-      },
-    });
-
     // 5. Performance Insight
     const insightDiv = document.getElementById("sgpaInsight");
     if (sgpaData.length >= 2) {

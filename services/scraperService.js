@@ -12,6 +12,7 @@ async function getResult(pin) {
         "--disable-gpu",
         "--window-size=1920,1080",
       ],
+      ignoreHTTPSErrors: true,
     };
 
     browser = await Promise.race([
@@ -30,7 +31,7 @@ async function getResult(pin) {
     await page.setDefaultNavigationTimeout(60000);
 
     await page.goto("https://www.student.apamaravathi.in/mymarks.php", {
-      waitUntil: "networkidle2",
+      waitUntil: "domcontentloaded",
       timeout: 60000,
     });
 
@@ -40,7 +41,7 @@ async function getResult(pin) {
 
     await Promise.all([
       page.click('input[type="submit"]'),
-      page.waitForNavigation({ waitUntil: "networkidle2", timeout: 60000 }),
+      page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 60000 }),
     ]);
 
     // Wait specifically for a table to ensure results are loaded

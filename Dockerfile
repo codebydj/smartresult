@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libx11-xcb1 \
     libxtst6 \
+    libgbm1 \
     lsb-release \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
