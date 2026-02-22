@@ -1,44 +1,76 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
+const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const apiRoutes = require("./routes/api");
 
+const { connectDB } = require("./config/database");
+const errorHandler = require("./middleware/errorHandler");
+const apiRoutes = require("./routes/v1");
 const { getResult } = require("./services/scraperService");
 
 const app = express();
 
+// ============================================
+// MIDDLEWARE
+// ============================================
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdnjs.cloudflare.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+        connectSrc: [
+          "'self'",
+          "https://cdnjs.cloudflare.com",
+          "https://www.student.apamaravathi.in",
+        ],
+      },
+    },
+  }),
+);
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+// Rate Limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 30,
+  max: 30, // 30 requests per minute
+  message: "Too many requests from this IP, please try again later.",
 });
-app.use(limiter);
+app.use("/api/", limiter);
 
-// MongoDB connect (optional)
-const MONGO = process.env.MONGODB_URI || process.env.MONGO || "";
-if (MONGO) {
-  mongoose
-    .connect(MONGO, { keepAlive: true })
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((err) => console.warn("MongoDB connection failed:", err.message));
+// ============================================
+// DATABASE CONNECTION
+// ============================================
+if (process.env.MONGODB_URI) {
+  connectDB().then(() => {
+    console.log("✓ Database connection established");
+  });
 } else {
-  console.log("MONGODB_URI not set; running without DB persistence");
+  console.warn("⚠ MONGODB_URI not set; running without database persistence");
 }
 
-app.use("/api", apiRoutes);
+// ============================================
+// API ROUTES
+// ============================================
+app.use("/api/v1", apiRoutes);
 
-// keep existing simple endpoint for backward compatibility
-app.get("/result", async (req, res) => {
-  const { pin, semester } = req.query;
+// ============================================
+// LEGACY ROUTES (Backward Compatibility)
+// ============================================
+app.get("/result", async (req, res, next) => {
+  const { pin } = req.query;
   if (!pin) return res.status(400).json({ error: "PIN is required" });
   try {
-    const data = await getResult(pin, semester);
+    const data = await getResult(pin);
     res.json(data);
   } catch (err) {
     console.error("Error:", err);
@@ -46,7 +78,66 @@ app.get("/result", async (req, res) => {
   }
 });
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// ============================================
+// ERROR HANDLING
+// ============================================
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Global error handler
+app.use(errorHandler);
+
+// ============================================
+// SERVER START
+// ============================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log(`Server running at http://localhost:${PORT}`),
-);
+const NODE_ENV = process.env.NODE_ENV || "development";
+
+// Start server and keep reference for graceful shutdown
+const server = app.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════╗
+║      SmartResult Portal Running        ║
+╠════════════════════════════════════════╣
+║ Server: http://localhost:${PORT}         ║
+║ Environment: ${NODE_ENV}                  ║
+║ API: http://localhost:${PORT}/api/v1     ║
+╚════════════════════════════════════════╝
+  `);
+});
+
+// Handle server errors (e.g., port in use)
+server.on("error", (err) => {
+  if (err && err.code === "EADDRINUSE") {
+    console.error(
+      `✗ Port ${PORT} is already in use. Please free the port or set PORT in .env.`,
+    );
+    process.exit(1);
+  }
+  console.error("✗ Server error:", err);
+  process.exit(1);
+});
+
+// Graceful Shutdown
+const shutdown = () => {
+  console.log("SIGTERM/SIGINT received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+  // Force shutdown after 10s
+  setTimeout(() => {
+    console.error("Forcing shutdown");
+    process.exit(1);
+  }, 10000);
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

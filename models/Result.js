@@ -17,14 +17,60 @@ const SemesterSchema = new mongoose.Schema({
   subjects: [SubjectSchema],
 });
 
-const ResultSchema = new mongoose.Schema({
-  studentName: String,
-  rollNumber: String,
-  registrationNumber: String,
-  branch: String,
-  academicRegulation: String,
-  semesters: [SemesterSchema],
-  createdAt: { type: Date, default: Date.now },
-});
+const resultSchema = new mongoose.Schema(
+  {
+    pin: {
+      type: String,
+      required: [true, "PIN is required"],
+      trim: true,
+      lowercase: true,
+    },
+    studentName: String,
+    name: {
+      type: String,
+      default: "N/A",
+    },
+    rollNumber: String,
+    registrationNumber: String,
+    branch: String,
+    academicRegulation: String,
 
-module.exports = mongoose.model("Result", ResultSchema);
+    // Structured semester data
+    semesters: [SemesterSchema],
+
+    // Aggregated data
+    overallCGPA: String,
+    overallSGPA: String,
+    totalSemesters: {
+      type: Number,
+      default: 0,
+    },
+
+    // Metadata
+    searchedBy: {
+      type: String,
+      default: "anonymous",
+    },
+    ipAddress: String,
+    scrapedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true },
+);
+
+// Indexes
+resultSchema.index({ pin: 1 });
+resultSchema.index({ studentName: "text", name: "text" });
+resultSchema.index({ createdAt: -1 });
+
+module.exports = mongoose.model("Result", resultSchema);

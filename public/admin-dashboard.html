@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - SmartResult</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      rel="stylesheet" />
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient sticky-top">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">
+          <span class="brand-icon">📊</span> SmartResult Admin
+        </a>
+        <div class="ms-auto">
+          <span class="text-white me-3" id="adminName"></span>
+          <button
+            class="btn btn-outline-light btn-sm"
+            id="logoutBtn"
+            onclick="logout()">
+            Logout
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid py-4">
+      <!-- Loading Overlay -->
+      <div id="loadingOverlay" class="loading-overlay" style="display: none">
+        <div class="loading-container">
+          <div class="spinner-modal"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div class="mb-5">
+        <h1 class="display-6 fw-bold">Dashboard</h1>
+        <p class="text-muted">
+          Welcome back! Here's what's happening in your portal.
+        </p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="row mb-5 g-3">
+        <div class="col-md-3">
+          <div class="card shadow-lg border-0">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1">Total Searches</p>
+                  <h3 class="mb-0" id="totalSearches">0</h3>
+                </div>
+                <span class="fs-3">🔍</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-lg border-0">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1">Unique Students</p>
+                  <h3 class="mb-0" id="uniqueStudents">0</h3>
+                </div>
+                <span class="fs-3">👥</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-lg border-0">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1">Avg CGPA</p>
+                  <h3 class="mb-0" id="avgCGPA">0</h3>
+                </div>
+                <span class="fs-3">📈</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-lg border-0">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1">Today's Searches</p>
+                  <h3 class="mb-0" id="todaySearches">0</h3>
+                </div>
+                <span class="fs-3">📅</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="row mb-5 g-4">
+        <div class="col-lg-8">
+          <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Semester-wise Performance</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="semesterChart" height="80"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0">Quick Stats</h5>
+            </div>
+            <div class="card-body">
+              <div id="quickStats"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Searches Table -->
+      <div class="card shadow-lg border-0 mb-5">
+        <div
+          class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent Searches</h5>
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            style="width: 200px"
+            id="searchInput"
+            placeholder="Search..." />
+        </div>
+        <div class="card-body table-responsive">
+          <table class="table table-hover mb-0" id="recentSearchesTable">
+            <thead class="table-light">
+              <tr>
+                <th>PIN</th>
+                <th>Student Name</th>
+                <th>Semesters</th>
+                <th>CGPA</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  Loading data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <nav>
+            <ul class="pagination mb-0" id="pagination"></ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+      <div class="container">
+        <p class="mb-0">SmartResult © 2024 | Admin Dashboard</p>
+      </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="admin-dashboard.js"></script>
+  </body>
+</html>

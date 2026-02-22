@@ -4,15 +4,39 @@ import axios from "axios";
 export default function Landing({ onResult }) {
   const [reg, setReg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const fetchTestData = async () => {
+    setLoading(true);
+    try {
+      const resp = await axios.get("/api/v1/test/result");
+      if (resp.data && resp.data.data) {
+        onResult(resp.data.data);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Test data failed. " + (e.message || ""));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchResult = async () => {
     if (!reg) return;
     setLoading(true);
+    setError("");
     try {
-      const resp = await axios.post("/api/fetch", { pin: reg });
-      if (resp.data && resp.data.data) onResult(resp.data.data);
+      const resp = await axios.post("/api/v1/result", { pin: reg });
+      if (resp.data && resp.data.data) {
+        onResult(resp.data.data);
+      } else {
+        setError("No result data received. Please try again.");
+      }
     } catch (e) {
       console.error(e);
-      alert("Failed to fetch result. Check server logs.");
+      const errMsg =
+        e.response?.data?.error || e.message || "Failed to fetch result";
+      setError(`Error: ${errMsg}`);
     } finally {
       setLoading(false);
     }
@@ -42,6 +66,13 @@ export default function Landing({ onResult }) {
             {loading ? "Fetching..." : "Submit"}
           </button>
         </div>
+        {error && <p className="mt-3 text-red-600 text-sm">{error}</p>}
+        <button
+          onClick={fetchTestData}
+          className="mt-4 w-full px-4 py-2 bg-slate-400 text-white rounded-lg text-sm hover:bg-slate-500"
+          disabled={loading}>
+          📋 Try Test Data
+        </button>
         <p className="mt-4 text-xs text-slate-500">
           No data is stored on external systems unless you enable saving.
         </p>

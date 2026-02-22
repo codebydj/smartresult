@@ -1,37 +1,39 @@
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("resultForm");
-  const spinner = document.getElementById("spinner");
   const submitBtn = document.getElementById("submitBtn");
   const resultDiv = document.getElementById("result");
+  const loadingOverlay = document.getElementById("loadingOverlay");
 
   if (form) {
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const pin = document.getElementById("pin").value.trim();
-      const semester = document.getElementById("semester").value;
 
       if (!pin) {
         resultDiv.innerHTML = `<p style="color:red">Please enter a PIN.</p>`;
         return;
       }
 
-      // show loading
-      spinner.classList.add("show");
-      spinner.setAttribute("aria-hidden", "false");
+      // show loading overlay
+      loadingOverlay.style.display = "flex";
       submitBtn.disabled = true;
 
       try {
-        const res = await fetch(
-          `/result?pin=${encodeURIComponent(pin)}&semester=${encodeURIComponent(semester)}`,
-        );
-        const data = await res.json();
+        const res = await fetch("/api/v1/result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin: pin }),
+        });
+        const response = await res.json();
 
-        if (data.error) {
-          resultDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
+        if (!res.ok || response.error) {
+          resultDiv.innerHTML = `<p style="color:red">${response.error || "Failed to fetch result"}</p>`;
         } else {
+          // API returns { message, data }, so extract the data object
+          const data = response.data || response;
           let html = `<h3>Result Details</h3>`;
-          const displayName = data.name || data.studentName || "";
+          const displayName = data.name || data.studentName || "N/A";
           html += `<p><strong>Name:</strong> ${displayName}</p>`;
           if (data.rollNumber)
             html += `<p><strong>Roll Number:</strong> ${data.rollNumber}</p>`;
@@ -46,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
             data.semesters.forEach((s) => {
               html += `<h4>Semester: ${s.semester || ""}</h4>`;
               if (Array.isArray(s.subjects) && s.subjects.length) {
-                html += `<table style="width:100%;border-collapse:collapse" border="1"><thead><tr><th>Code</th><th>Subject</th><th>Grade Point</th><th>Grade</th><th>Status</th><th>Credit</th><th>Points</th></tr></thead><tbody>`;
+                html += `<table style="width:100%;border-collapse:collapse" border="1"><thead><tr><th>Code</th><th>Subject</th><th>Grade Point</th><th>Grade</th><th>Credit</th><th>Points</th></tr></thead><tbody>`;
                 s.subjects.forEach((sub) => {
                   const gp = sub.gradePoint || sub.total || "";
                   const grade = sub.grade || "";
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (!isNaN(gpn) && !isNaN(crn))
                       points = (gpn * crn).toFixed(2);
                   }
-                  html += `<tr><td>${sub.subjectCode || ""}</td><td>${sub.subjectName || ""}</td><td>${gp}</td><td>${grade}</td><td>${status}</td><td>${credit}</td><td>${points}</td></tr>`;
+                  html += `<tr><td>${sub.subjectCode || ""}</td><td>${sub.subjectName || ""}</td><td>${gp}</td><td>${grade}</td><td>${credit}</td><td>${points}</td></tr>`;
                 });
                 html += `</tbody></table>`;
               }
@@ -77,9 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error(err);
         resultDiv.innerHTML = `<p style="color:red">Failed to fetch result. Try again later.</p>`;
       } finally {
-        // hide loading
-        spinner.classList.remove("show");
-        spinner.setAttribute("aria-hidden", "true");
+        // hide loading overlay
+        loadingOverlay.style.display = "none";
         submitBtn.disabled = false;
       }
     });

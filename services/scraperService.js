@@ -1,13 +1,27 @@
 const puppeteer = require("puppeteer");
 
-async function getResult(pin, semester) {
+async function getResult(pin) {
   let browser;
   try {
-    browser = await puppeteer.launch({ headless: true });
+    const launchOptions = {
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    };
+
+    browser = await Promise.race([
+      puppeteer.launch(launchOptions),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Puppeteer launch timeout")), 30000),
+      ),
+    ]);
+
     const page = await browser.newPage();
+    await page.setDefaultTimeout(30000);
+    await page.setDefaultNavigationTimeout(30000);
 
     await page.goto("https://www.student.apamaravathi.in/mymarks.php", {
       waitUntil: "networkidle2",
+      timeout: 30000,
     });
 
     await page.waitForSelector('input[name="rno"]');
@@ -36,8 +50,17 @@ async function getResult(pin, semester) {
       for (const n of allTextNodes) {
         const txt = clean(n.innerText).toLowerCase();
         if (!studentName && /\bname\b\s*[:\-]/i.test(n.innerText)) {
-          const m = n.innerText.match(/name\s*[:\-]\s*(.+)/i);
-          if (m) studentName = clean(m[1]);
+          const m = n.innerText.match(/name\s*[:\-]\s*([^\r\n]+)/i);
+          if (m) {
+            const potentialName = clean(m[1]);
+            if (
+              potentialName &&
+              potentialName.length > 1 &&
+              !/^[<>=≥≤]/.test(potentialName)
+            ) {
+              studentName = potentialName;
+            }
+          }
         }
         if (
           !rollNumber &&
@@ -46,9 +69,49 @@ async function getResult(pin, semester) {
           )
         ) {
           const m = n.innerText.match(
-            /(?:hall ticket|roll no(?:\.|umber)?|rno|register no|reg no)\s*[:\-]?\s*(\w+)/i,
+            /(?:hall ticket|roll no(?:\.|umber)?|rno|register no|reg no)\s*[:\-]?\s*([A-Za-z0-9\-\/]+)/i,
           );
           if (m) rollNumber = clean(m[1]);
+        }
+      }
+
+      // NEW: Fallback for name in H1/H2/H3 tags if not found by label
+      if (!studentName) {
+        const headers = Array.from(document.querySelectorAll("h1, h2, h3"));
+        const ignoreWords = [
+          "college",
+          "university",
+          "institute",
+          "technology",
+          "engineering",
+          "autonomous",
+          "grade",
+          "marks",
+          "result",
+          "memorandum",
+          "sheet",
+          "mvrs",
+          "semester",
+          "branch",
+          "date",
+          "page",
+          "controller",
+          "examinations",
+        ];
+
+        for (const h of headers) {
+          const txt = clean(h.innerText);
+          if (!txt) continue;
+          const lower = txt.toLowerCase();
+          if (
+            !/\d/.test(txt) &&
+            txt.includes(" ") &&
+            txt.length > 3 &&
+            !ignoreWords.some((w) => lower.includes(w))
+          ) {
+            studentName = txt;
+            break;
+          }
         }
       }
 
@@ -58,7 +121,7 @@ async function getResult(pin, semester) {
         const t = txt.replace(/\s+/g, " ").trim();
         return (
           /(?:^|\s)(?:semester|sem)\b[\s:\-]*([ivx]+|\d+)/i.test(t) ||
-          /\bsem\b\s*[-:]?\s*\d+/i.test(t)
+          /\bsem\b\s*[-:.]?\s*([ivx]+|\d+)/i.test(t)
         );
       };
 
@@ -68,7 +131,7 @@ async function getResult(pin, semester) {
         const txt = clean(el.innerText || "");
         if (!txt) return;
         if (isSemesterHeading(txt)) {
-          const m = txt.match(/(?:semester|sem)\s*[:\-]?\s*([ivx\d]+)/i);
+          const m = txt.match(/(?:semester|sem)\s*[:\-.]?\s*([ivx\d]+)/i);
           const semLabel = m ? m[1].toString().toUpperCase() : txt;
           semesterHeads.push({ el, idx, text: txt, semLabel });
         }
@@ -78,7 +141,7 @@ async function getResult(pin, semester) {
       if (semesterHeads.length === 0) {
         allElements.forEach((el, idx) => {
           const txt = clean(el.innerText || "");
-          if (/\bsem\b\s*\d+/i.test(txt) || /semester/i.test(txt)) {
+          if (/\bsem\b\s*[:\-.]?\s*([ivx\d]+)/i.test(txt) || /semester/i.test(txt)) {
             const m = txt.match(/(?:semester|sem)\s*[:\-]?\s*([ivx\d]+)/i);
             const semLabel = m ? m[1].toString().toUpperCase() : txt;
             semesterHeads.push({ el, idx, text: txt, semLabel });
@@ -211,8 +274,8 @@ async function getResult(pin, semester) {
         // Find sgpa and cgpa inside section text
         let sgpa = "";
         let cgpa = "";
-        const m1 = sectionText.match(/sgpa\s*[:\-]?\s*([\d.]+)/i);
-        const m2 = sectionText.match(/cgpa\s*[:\-]?\s*([\d.]+)/i);
+        const m1 = sectionText.match(/sgpa\s*[:\-]?\s*=?\s*([\d.]+)/i);
+        const m2 = sectionText.match(/cgpa\s*[:\-]?\s*=?\s*([\d.]+)/i);
         if (m1) sgpa = m1[1].trim();
         if (m2) cgpa = m2[1].trim();
 
@@ -317,7 +380,13 @@ async function getResult(pin, semester) {
       // Clean and deduplicate semesters and subjects, remove unhelpful repetitions
       const semMap = new Map();
       for (const s of semesters) {
-        const key = (s.semester || "").toString().replace(/\s+/g, " ").trim();
+        // FIX: Normalize key to ensure "Semester 3" (header) and "Sem 3" (footer) merge
+        let key = (s.semester || "").toString().replace(/\s+/g, " ").trim();
+        const keyMatch = key.match(/(?:sem|semester|^)\s*[:\-.]?\s*([ivx\d]+)/i);
+        if (keyMatch) {
+          key = keyMatch[1].toUpperCase(); // Becomes "3", "III", "4", etc.
+        }
+
         if (!key) continue;
 
         // dedupe subjects within this semester
@@ -327,9 +396,65 @@ async function getResult(pin, semester) {
           const code = (sub.subjectCode || "").toString().trim();
           const nameSub = (sub.subjectName || "").toString().trim();
           const subKey = `${code}|${nameSub}`;
-          // ignore legend/grade-table rows like '>= 90' which don't have subject codes
-          if (/^[<>≥≤=]/.test(code) && !nameSub) return;
-          if (!subjSeen.has(subKey) && (code || nameSub)) {
+
+          // Skip legend/grading scale rows
+          // Skip comparison operators at start (>=, <=, <, >, etc.)
+          if (
+            /^[<>≥≤=]/.test(code) ||
+            code.startsWith("&gt;") ||
+            code.startsWith("&lt;")
+          )
+            return;
+
+          // Extra robust filtering for grading scale rows
+          if (/^>=|≥|&gt;=|&ge;/.test(code)) return;
+          if (/^<|&lt;/.test(code)) return;
+          if (code.includes("90") && /superior/i.test(nameSub)) return;
+          if (code.includes("80") && /excellent/i.test(nameSub)) return;
+          if (code.includes("70") && /very good/i.test(nameSub)) return;
+          if (code.includes("60") && /good/i.test(nameSub)) return;
+          if (code.includes("50") && /average/i.test(nameSub)) return;
+          if (code.includes("40") && /pass/i.test(nameSub)) return;
+          if (code.includes("40") && /fail/i.test(nameSub)) return;
+          if (code.includes("6.5") && code.includes("7.5")) return;
+
+          // Skip grading table rows and class award rows
+          if (
+            /^(Range|Class Awarded|Letter Grade|Grade Points)/i.test(code) ||
+            /^(Range|Class Awarded|Letter Grade|Grade Points)/i.test(nameSub) ||
+            code.includes("Range in which") ||
+            nameSub.includes("Range in which")
+          )
+            return;
+          if (/^>=/.test(code) || /^≥/.test(code)) return;
+          // Skip "Absent" row in grading table (often code is "-")
+          if ((code === "-" || code === "–") && /absent/i.test(nameSub)) return;
+          // Skip grade descriptors
+          if (
+            /^(superior|excellent|very good|good|average|pass|fail|withdrawn|incomplete|absent)$/i.test(
+              nameSub,
+            )
+          )
+            return;
+          // Skip GPA ranges like "≥ 6.5 < 7.5"
+          if (/^[≥≤><].*\d+\.\d+/.test(code)) return;
+          // Skip rows with just numbers (like 10, 9, 8 for grade points)
+          if (
+            /^\d+$/.test(code) &&
+            /^[A-Z]|\s/.test(nameSub) &&
+            nameSub.length < 20
+          ) {
+            if (
+              /superior|excellent|very good|good|average|pass|fail|absent/i.test(
+                nameSub,
+              )
+            )
+              return;
+          }
+          // Skip if both are empty
+          if (!code && !nameSub) return;
+
+          if (!subjSeen.has(subKey)) {
             subjSeen.add(subKey);
             cleanSubjects.push({
               subjectCode: code,
@@ -428,9 +553,18 @@ async function getResult(pin, semester) {
       const pageText = clean(document.body.innerText || "");
       if (!studentName) {
         const m = pageText.match(
-          /(?:name|student name|student's name)\s*[:\-]?\s*(.+)/i,
+          /(?:name|student name|student's name)\s*[:\-]?\s*([^\r\n\t]+)/i,
         );
-        if (m) studentName = clean(m[1].split(/\r?\n/)[0]);
+        if (m) {
+          const namePart = clean(m[1]);
+          // Extract just the name part before any numbers or extra text
+          const nameOnly = namePart.split(
+            /\s*\(|\s*\[|\s+\d|\s+[A-Z]\d{2}|\s+[A-Za-z0-9-\/]+$/,
+          )[0];
+          if (nameOnly && nameOnly.length > 1 && !/^[<>=≥≤]/.test(nameOnly)) {
+            studentName = clean(nameOnly);
+          }
+        }
       }
       if (!rollNumber) {
         const m2 = pageText.match(
@@ -462,6 +596,29 @@ async function getResult(pin, semester) {
 
     return data;
   } catch (err) {
+    console.error("Scraper Error:", err.message);
+
+    // Provide user-friendly error messages
+    if (err.message.includes("timeout") || err.message.includes("Timeout")) {
+      throw new Error(
+        "Request timed out. The website might be slow or unreachable.",
+      );
+    } else if (
+      err.message.includes("ERR_NAME_NOT_RESOLVED") ||
+      err.message.includes("ENOTFOUND")
+    ) {
+      throw new Error(
+        "Cannot reach the result website. Please check your internet connection.",
+      );
+    } else if (
+      err.message.includes("Invalid PIN") ||
+      err.message.includes("No result")
+    ) {
+      throw new Error(
+        "No result found for this PIN. Please verify and try again.",
+      );
+    }
+
     throw err;
   } finally {
     if (browser) await browser.close();

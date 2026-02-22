@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: smartresult-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - smartresult-network
+
+  app:
+    build: .
+    container_name: smartresult-app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/smartresult?authSource=admin
+      PORT: 3000
+      JWT_SECRET: dev_secret_key_change_in_production
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - smartresult-network
+    command: npm run dev
+
+volumes:
+  mongodb_data:
+
+networks:
+  smartresult-network:
+    driver: bridge
