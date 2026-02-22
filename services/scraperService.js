@@ -5,7 +5,12 @@ async function getResult(pin) {
   try {
     const launchOptions = {
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
     };
 
     browser = await Promise.race([
