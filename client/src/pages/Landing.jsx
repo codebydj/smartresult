@@ -6,10 +6,16 @@ export default function Landing({ onResult }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const API_BASE_URL =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+      ? ""
+      : "https://smartresult-7z5x.onrender.com";
+
   const fetchTestData = async () => {
     setLoading(true);
     try {
-      const resp = await axios.get("/api/v1/test/result");
+      const resp = await axios.get(`${API_BASE_URL}/api/v1/test/result`);
       if (resp.data && resp.data.data) {
         onResult(resp.data.data);
       }
@@ -26,7 +32,9 @@ export default function Landing({ onResult }) {
     setLoading(true);
     setError("");
     try {
-      const resp = await axios.post("/api/v1/result", { pin: reg });
+      const resp = await axios.post(`${API_BASE_URL}/api/v1/result`, {
+        pin: reg,
+      });
       if (resp.data && resp.data.data) {
         onResult(resp.data.data);
       } else {
