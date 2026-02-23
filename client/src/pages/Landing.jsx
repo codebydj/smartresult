@@ -37,6 +37,7 @@ export default function Landing({ onResult }) {
       const errMsg =
         e.response?.data?.error || e.message || "Failed to fetch result";
       setError(`Error: ${errMsg}`);
+      alert(errMsg);
     } finally {
       setLoading(false);
     }

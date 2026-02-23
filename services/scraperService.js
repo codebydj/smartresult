@@ -26,10 +26,12 @@ async function getResult(pin) {
     ]);
 
     const page = await browser.newPage();
-    
+
     // Set a real User-Agent to avoid being blocked
-    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-    
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    );
+
     await page.setDefaultTimeout(60000);
     await page.setDefaultNavigationTimeout(60000);
 
@@ -51,7 +53,9 @@ async function getResult(pin) {
     try {
       await page.waitForSelector("table", { timeout: 10000 });
     } catch (e) {
-      console.log("⚠️ No table found immediately, attempting to parse anyway...");
+      console.log(
+        "⚠️ No table found immediately, attempting to parse anyway...",
+      );
     }
 
     const data = await page.evaluate(() => {
@@ -160,7 +164,10 @@ async function getResult(pin) {
       if (semesterHeads.length === 0) {
         allElements.forEach((el, idx) => {
           const txt = clean(el.innerText || "");
-          if (/\bsem\b\s*[:\-.]?\s*([ivx\d]+)/i.test(txt) || /semester/i.test(txt)) {
+          if (
+            /\bsem\b\s*[:\-.]?\s*([ivx\d]+)/i.test(txt) ||
+            /semester/i.test(txt)
+          ) {
             const m = txt.match(/(?:semester|sem)\s*[:\-]?\s*([ivx\d]+)/i);
             const semLabel = m ? m[1].toString().toUpperCase() : txt;
             semesterHeads.push({ el, idx, text: txt, semLabel });
@@ -398,10 +405,13 @@ async function getResult(pin) {
 
       // Clean and deduplicate semesters and subjects, remove unhelpful repetitions
       const semMap = new Map();
+
       for (const s of semesters) {
         // FIX: Normalize key to ensure "Semester 3" (header) and "Sem 3" (footer) merge
         let key = (s.semester || "").toString().replace(/\s+/g, " ").trim();
-        const keyMatch = key.match(/(?:sem|semester|^)\s*[:\-.]?\s*([ivx\d]+)/i);
+        const keyMatch = key.match(
+          /(?:sem|semester|^)\s*[:\-.]?\s*([ivx\d]+)/i,
+        );
         if (keyMatch) {
           key = keyMatch[1].toUpperCase(); // Becomes "3", "III", "4", etc.
         }
@@ -417,46 +427,35 @@ async function getResult(pin) {
           const subKey = `${code}|${nameSub}`;
 
           // Skip legend/grading scale rows
-          // Skip comparison operators at start (>=, <=, <, >, etc.)
-          if (
+          // Detect grading scale / legend rows
+          const isGradingRow =
             /^[<>≥≤=]/.test(code) ||
             code.startsWith("&gt;") ||
-            code.startsWith("&lt;")
-          )
-            return;
-
-          // Extra robust filtering for grading scale rows
-          if (/^>=|≥|&gt;=|&ge;/.test(code)) return;
-          if (/^<|&lt;/.test(code)) return;
-          if (code.includes("90") && /superior/i.test(nameSub)) return;
-          if (code.includes("80") && /excellent/i.test(nameSub)) return;
-          if (code.includes("70") && /very good/i.test(nameSub)) return;
-          if (code.includes("60") && /good/i.test(nameSub)) return;
-          if (code.includes("50") && /average/i.test(nameSub)) return;
-          if (code.includes("40") && /pass/i.test(nameSub)) return;
-          if (code.includes("40") && /fail/i.test(nameSub)) return;
-          if (code.includes("6.5") && code.includes("7.5")) return;
-
-          // Skip grading table rows and class award rows
-          if (
+            code.startsWith("&lt;") ||
+            /^>=|≥|&gt;=|&ge;/.test(code) ||
+            /^<|&lt;/.test(code) ||
+            (code.includes("90") && /superior/i.test(nameSub)) ||
+            (code.includes("80") && /excellent/i.test(nameSub)) ||
+            (code.includes("70") && /very good/i.test(nameSub)) ||
+            (code.includes("60") && /good/i.test(nameSub)) ||
+            (code.includes("50") && /average/i.test(nameSub)) ||
+            (code.includes("40") && /pass/i.test(nameSub)) ||
+            (code.includes("40") && /fail/i.test(nameSub)) ||
+            (code.includes("6.5") && code.includes("7.5")) ||
             /^(Range|Class Awarded|Letter Grade|Grade Points)/i.test(code) ||
             /^(Range|Class Awarded|Letter Grade|Grade Points)/i.test(nameSub) ||
             code.includes("Range in which") ||
-            nameSub.includes("Range in which")
-          )
-            return;
-          if (/^>=/.test(code) || /^≥/.test(code)) return;
-          // Skip "Absent" row in grading table (often code is "-")
-          if ((code === "-" || code === "–") && /absent/i.test(nameSub)) return;
-          // Skip grade descriptors
-          if (
+            nameSub.includes("Range in which") ||
+            /^[≥≤><].*\d+\.\d+/.test(code) ||
+            ((code === "-" || code === "–") && /absent/i.test(nameSub)) ||
             /^(superior|excellent|very good|good|average|pass|fail|withdrawn|incomplete|absent)$/i.test(
               nameSub,
-            )
-          )
+            );
+
+          if (isGradingRow) {
             return;
-          // Skip GPA ranges like "≥ 6.5 < 7.5"
-          if (/^[≥≤><].*\d+\.\d+/.test(code)) return;
+          }
+
           // Skip rows with just numbers (like 10, 9, 8 for grade points)
           if (
             /^\d+$/.test(code) &&

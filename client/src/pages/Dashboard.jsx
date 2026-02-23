@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import Card from "../ui/Card";
 import LineChart from "../ui/LineChart";
 import PieChart from "../ui/PieChart";
 import { exportJSON, exportCSV } from "../utils/export";
@@ -16,11 +15,23 @@ function Summary({ data }) {
     .reduce((acc, sub) => acc + (parseFloat(sub.credit) || 0), 0);
   const classText = (parseFloat(cgpa) || 0) >= 7.5 ? "First Class" : "Pass";
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <Card title="Current CGPA" value={cgpa || "N/A"} />
-      <Card title="Latest SGPA" value={latestSgpa || "N/A"} />
-      <Card title="Credits Completed" value={`${totalCredits}`} />
-      <Card title="Academic Standing" value={classText} />
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-blue-200 transform hover:scale-105 transition-transform duration-300">
+        <div className="text-blue-100 text-sm font-medium uppercase tracking-wider mb-1">Current CGPA</div>
+        <div className="text-4xl font-bold tracking-tight">{cgpa || "N/A"}</div>
+      </div>
+      <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200 transform hover:scale-105 transition-transform duration-300">
+        <div className="text-indigo-100 text-sm font-medium uppercase tracking-wider mb-1">Latest SGPA</div>
+        <div className="text-4xl font-bold tracking-tight">{latestSgpa || "N/A"}</div>
+      </div>
+      <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg shadow-purple-200 transform hover:scale-105 transition-transform duration-300">
+        <div className="text-purple-100 text-sm font-medium uppercase tracking-wider mb-1">Credits Completed</div>
+        <div className="text-4xl font-bold tracking-tight">{totalCredits}</div>
+      </div>
+      <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl p-6 text-white shadow-lg shadow-pink-200 transform hover:scale-105 transition-transform duration-300">
+        <div className="text-pink-100 text-sm font-medium uppercase tracking-wider mb-1">Academic Standing</div>
+        <div className="text-2xl font-bold mt-2 tracking-tight">{classText}</div>
+      </div>
     </div>
   );
 }
@@ -90,16 +101,16 @@ export default function Dashboard({ data, onLogout }) {
     exportCSV(data, `${data.rollNumber || "student"}-summary.csv`);
 
   return (
-    <div className="min-h-screen">
-      <header className="flex items-center justify-between p-4 bg-white shadow">
-        <div>
-          <div className="font-semibold">
+    <div className="min-h-screen bg-slate-50/50">
+      <header className="flex items-center justify-between px-6 py-5 bg-white shadow-sm border-b border-slate-100 sticky top-0 z-10">
+        <div className="flex flex-col">
+          <div className="font-bold text-xl text-slate-800">
             {data.studentName || data.name || "Student"}
           </div>
-          <div className="text-sm text-slate-500">{data.rollNumber || ""}</div>
+          <div className="text-sm text-slate-500 font-mono">{data.rollNumber || ""}</div>
         </div>
         <div className="flex items-center gap-4">
-          <button className="px-3 py-2 rounded bg-slate-100" onClick={onLogout}>
+          <button className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors text-sm" onClick={onLogout}>
             Logout
           </button>
         </div>
@@ -109,38 +120,45 @@ export default function Dashboard({ data, onLogout }) {
         <Summary data={data} />
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white rounded-xl p-4 shadow">
+          <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold mb-3">CGPA Trend</h3>
+              <h3 className="font-bold text-slate-800 mb-4 text-lg">SGPA Performance</h3>
               <div className="flex gap-2">
                 <button
                   onClick={handleExportJSON}
-                  className="px-3 py-1 bg-slate-100 rounded">
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-medium rounded-md border border-slate-200 transition-colors">
                   Export JSON
                 </button>
                 <button
                   onClick={handleExportCSV}
-                  className="px-3 py-1 bg-slate-100 rounded">
+                  className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-medium rounded-md border border-slate-200 transition-colors">
                   Export CSV
                 </button>
               </div>
             </div>
             <LineChart data={data} onPointClick={handlePointClick} />
           </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <h3 className="font-semibold mb-3">Grade Distribution</h3>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <h3 className="font-bold text-slate-800 mb-4 text-lg">Grade Distribution</h3>
             <PieChart data={data} />
           </div>
         </section>
 
-        <section className="bg-white rounded-xl p-4 shadow">
-          <h3 className="font-semibold mb-3">Semester Details</h3>
-          <div className="flex gap-2 mb-3 overflow-auto">
+        <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-3 text-lg">
+            <span className="w-1 h-6 bg-indigo-500 rounded-full"></span>
+            Semester Details
+          </h3>
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
             {(semesters || []).map((s, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedSem(idx)}
-                className={`px-3 py-2 rounded ${selectedSem === idx ? "bg-indigo-600 text-white" : ""} border`}>
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                  selectedSem === idx
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 transform scale-105"
+                    : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 hover:border-slate-300"
+                }`}>
                 Sem {s.semester}
               </button>
             ))}
@@ -148,15 +166,19 @@ export default function Dashboard({ data, onLogout }) {
 
           <div className="space-y-4">
             {semesters[selectedSem] ? (
-              <div>
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <div className="font-medium">
-                      Semester {semesters[selectedSem].semester} — SGPA:{" "}
-                      {semesters[selectedSem].sgpa || "N/A"}
+                    <div className="text-lg font-bold text-slate-800">
+                      Semester {semesters[selectedSem].semester}
                     </div>
-                    <div className="text-sm text-slate-500">
-                      CGPA: {semesters[selectedSem].cgpa || "N/A"}
+                    <div className="flex gap-3 mt-1">
+                      <span className="text-sm font-medium px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-100">
+                        SGPA: {semesters[selectedSem].sgpa || "N/A"}
+                      </span>
+                      <span className="text-sm font-medium px-2 py-0.5 bg-purple-50 text-purple-700 rounded border border-purple-100">
+                        CGPA: {semesters[selectedSem].cgpa || "N/A"}
+                      </span>
                     </div>
                   </div>
                   <div className="w-1/3">
@@ -178,32 +200,53 @@ export default function Dashboard({ data, onLogout }) {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
                   <table className="min-w-full table-auto">
-                    <thead className="sticky top-0 bg-white">
-                      <tr className="text-left text-sm text-slate-600">
-                        <th className="p-2">Code</th>
-                        <th className="p-2">Subject</th>
-                        <th className="p-2">Grade</th>
-                        <th className="p-2">Grade Point</th>
-                        <th className="p-2">Credits</th>
-                        <th className="p-2">Status</th>
+                    <thead className="bg-slate-50">
+                      <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <th className="p-3">Code</th>
+                        <th className="p-3">Subject</th>
+                        <th className="p-3">Grade</th>
+                        <th className="p-3">Grade Point</th>
+                        <th className="p-3">Credits</th>
+                        <th className="p-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-white divide-y divide-slate-100">
                       {(semesters[selectedSem].subjects || []).map((sub, i) => (
-                        <tr key={i} className="border-t">
-                          <td className="p-2 text-sm">{sub.subjectCode}</td>
-                          <td className="p-2 text-sm">{sub.subjectName}</td>
-                          <td className="p-2">
+                        <tr
+                          key={i}
+                          className="hover:bg-slate-50 transition-colors">
+                          <td className="p-3 text-sm font-medium text-slate-700">
+                            {sub.subjectCode}
+                          </td>
+                          <td className="p-3 text-sm text-slate-600">
+                            {sub.subjectName}
+                          </td>
+                          <td className="p-3">
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getBadgeClass(sub.grade)}`}>
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold shadow-sm ${getBadgeClass(sub.grade)}`}>
                               {sub.grade}
                             </span>
                           </td>
-                          <td className="p-2 text-sm">{sub.gradePoint}</td>
-                          <td className="p-2 text-sm">{sub.credit}</td>
-                          <td className="p-2 text-sm">{sub.status}</td>
+                          <td className="p-3 text-sm text-slate-600 font-medium">
+                            {sub.gradePoint}
+                          </td>
+                          <td className="p-3 text-sm text-slate-600">
+                            {sub.credit}
+                          </td>
+                          <td className="p-3 text-sm">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                (sub.status || "")
+                                  .toLowerCase()
+                                  .includes("pass")
+                                  ? "bg-green-50 text-green-700 border border-green-100"
+                                  : "bg-red-50 text-red-700 border border-red-100"
+                              }`}>
+                              {sub.status}
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -217,47 +260,49 @@ export default function Dashboard({ data, onLogout }) {
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="font-medium">Highest scoring subject</div>
-            <div className="mt-2">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div className="font-semibold text-slate-500 text-sm uppercase tracking-wide">Highest scoring subject</div>
+            <div className="mt-3 text-lg font-medium text-slate-800">
               {analytics.highest
                 ? `${analytics.highest.subjectName} (${analytics.highest.subjectCode}) — ${analytics.highest.gradePoint}`
                 : "N/A"}
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="font-medium">Lowest scoring subject</div>
-            <div className="mt-2">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div className="font-semibold text-slate-500 text-sm uppercase tracking-wide">Lowest scoring subject</div>
+            <div className="mt-3 text-lg font-medium text-slate-800">
               {analytics.lowest
                 ? `${analytics.lowest.subjectName} (${analytics.lowest.subjectCode}) — ${analytics.lowest.gradePoint}`
                 : "N/A"}
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <div className="font-medium">Semester improvement</div>
-            <div className="mt-2">{analytics.improvement}%</div>
-            <div className="text-sm text-slate-500">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div className="font-semibold text-slate-500 text-sm uppercase tracking-wide">Semester improvement</div>
+            <div className={`mt-3 text-2xl font-bold ${parseFloat(analytics.improvement) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              {parseFloat(analytics.improvement) > 0 ? '+' : ''}{analytics.improvement}%
+            </div>
+            <div className="text-sm text-slate-500 mt-2 flex justify-between">
               Credit efficiency: {analytics.creditEfficiency}
             </div>
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-500 flex justify-between">
               Total S grades: {analytics.sCount}
             </div>
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-slate-500 flex justify-between">
               Class: {analytics.academicClass}
             </div>
           </div>
         </section>
 
-        <section className="bg-white rounded-xl p-4 shadow">
-          <h3 className="font-semibold mb-3">Feedback</h3>
+        <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <h3 className="font-bold text-slate-800 mb-4 text-lg">Feedback</h3>
           <div className="flex gap-4 flex-wrap">
-            <div className="p-3 rounded-lg bg-green-50">
+            <div className="px-4 py-3 rounded-xl bg-green-50 text-green-700 font-medium border border-green-100">
               ✅ Great Improvement This Semester
             </div>
-            <div className="p-3 rounded-lg bg-blue-50">
+            <div className="px-4 py-3 rounded-xl bg-blue-50 text-blue-700 font-medium border border-blue-100">
               📈 Performance Increased by {analytics.improvement}%
             </div>
-            <div className="p-3 rounded-lg bg-indigo-50">
+            <div className="px-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
               🌱 Consistent Academic Growth
             </div>
           </div>
@@ -268,13 +313,17 @@ export default function Dashboard({ data, onLogout }) {
 }
 
 function getBadgeClass(grade) {
-  if (!grade) return "bg-gray-100 text-gray-700";
+  if (!grade) return "bg-slate-100 text-slate-600 border border-slate-200";
   const g = grade.trim().toUpperCase();
-  if (g === "S") return "bg-green-100 text-green-800";
-  if (g === "A") return "bg-blue-100 text-blue-800";
-  if (g === "B") return "bg-sky-100 text-sky-800";
-  if (g === "C") return "bg-orange-100 text-orange-800";
-  if (g === "D") return "bg-red-100 text-red-800";
-  if (g === "F") return "bg-red-800 text-white";
-  return "bg-gray-100 text-gray-700";
+  if (g === "S" || g === "O")
+    return "bg-emerald-100 text-emerald-700 border border-emerald-200";
+  if (g === "A" || g === "A+")
+    return "bg-blue-100 text-blue-700 border border-blue-200";
+  if (g === "B") return "bg-cyan-100 text-cyan-700 border border-cyan-200";
+  if (g === "C")
+    return "bg-yellow-100 text-yellow-700 border border-yellow-200";
+  if (g === "D")
+    return "bg-orange-100 text-orange-700 border border-orange-200";
+  if (g === "F") return "bg-red-100 text-red-700 border border-red-200";
+  return "bg-slate-100 text-slate-600 border border-slate-200";
 }

@@ -62,6 +62,17 @@ exports.getResult = async (req, res, next) => {
       JSON.stringify(scrapedData).substring(0, 200),
     );
 
+    // Check if student name exists. If not, the PIN is likely invalid.
+    if (
+      !scrapedData ||
+      !scrapedData.studentName ||
+      scrapedData.studentName.trim() === ""
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid PIN. Student details not found." });
+    }
+
     if (
       !scrapedData ||
       !scrapedData.semesters ||
