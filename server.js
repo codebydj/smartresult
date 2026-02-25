@@ -107,9 +107,9 @@ const server = app.listen(PORT, () => {
 ╔════════════════════════════════════════╗
 ║      SmartResult Portal Running        ║
 ╠════════════════════════════════════════╣
-║ Server: http://localhost:${PORT}         ║
-║ Environment: ${NODE_ENV}                  ║
-║ API: http://localhost:${PORT}/api/v1     ║
+║ Server: http://localhost:${PORT}          ║
+║ Environment: ${NODE_ENV}               ║
+║ API: http://localhost:${PORT}/api/v1      ║
 ╚════════════════════════════════════════╝
   `);
 });
