@@ -9,11 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // If hosting on GitHub Pages, set this to your deployed backend URL (e.g., "https://your-app.onrender.com")
   // If hosting everything together (Docker/Local), leave it as an empty string ""
   // Auto-detect: If running on localhost, use local backend. If on GitHub Pages, use Render backend.
-  const API_BASE_URL =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-      ? ""
-      : "https://smartresult-7z5x.onrender.com";
+  // Always use same-origin API (works for local + Render)
+const API_BASE_URL = "";
 
   // Store chart instances to destroy them before re-rendering
   let chartInstances = {
@@ -62,8 +59,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       try {
         const res = await fetch(
-          `${API_BASE_URL}/api/v1/result?pin=${encodeURIComponent(pin)}`,
-        );
+  `/api/v1/result?pin=${encodeURIComponent(pin)}`
+);
         const data = await res.json();
 
         if (data.error) {
@@ -120,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           <!-- Action Buttons -->
           <div class="mb-4">
-            <a href="${API_BASE_URL}/api/v1/result/${resultData.pin}/download-pdf" class="btn btn-outline-primary" target="_blank">
+            <a href="/api/v1/result/${resultData.pin}/download-pdf" class="btn btn-outline-primary" target="_blank">
               📥 Download PDF
             </a>
           </div>
@@ -340,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadFooterStats() {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/result/stats/public`);
+      const res = await fetch(`/api/v1/result/stats/public`);
       if (res.ok) {
         const data = await res.json();
         const footer = document.createElement("footer");
