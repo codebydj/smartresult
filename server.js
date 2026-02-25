@@ -35,7 +35,6 @@ app.use(
           "'self'",
           "https://cdnjs.cloudflare.com",
           "https://www.student.apamaravathi.in",
-          "https://smartresult-y496.onrender.com",
         ],
       },
     },
