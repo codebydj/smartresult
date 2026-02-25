@@ -106,7 +106,6 @@ exports.getResult = async (req, res, next) => {
         "N/A",
       rollNumber: scrapedData.rollNumber || null,
       semesters: scrapedData.semesters || [],
-      searchedBy: req.admin?.username || "anonymous",
       ipAddress: req.ip || req.connection.remoteAddress,
       scrapedAt: new Date(),
     };
@@ -276,15 +275,6 @@ exports.downloadResultPDF = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-// Admin stubs to prevent routing errors
-exports.getAllResults = async (req, res, next) => {
-  res.status(404).json({ error: "Admin portal disabled" });
-};
-
-exports.getResultStats = async (req, res, next) => {
-  res.status(404).json({ error: "Admin portal disabled" });
 };
 
 // Test endpoint with sample data (for debugging)

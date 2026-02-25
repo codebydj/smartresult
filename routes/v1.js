@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
+
 const resultController = require("../controllers/resultController");
 const dashboardController = require("../controllers/dashboardController");
 
 // ============================================
 // RESULT ROUTES
 // ============================================
+
 // Get/Scrape result and store in DB
 router.get("/result", resultController.getResult);
 router.post("/result", resultController.getResult);

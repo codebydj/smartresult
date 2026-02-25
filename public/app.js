@@ -42,13 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setInterval(updateClock, 1000);
   updateClock();
 
-  // 2. Remove Admin Login Button (if present in HTML)
-  const adminLinks = document.querySelectorAll(
-    'a[href*="admin"], button[id*="admin"]',
-  );
-  adminLinks.forEach((el) => el.remove());
-
-  // 3. Load Footer Stats
+  // 2. Load Footer Stats
   loadFooterStats();
 
   if (form) {

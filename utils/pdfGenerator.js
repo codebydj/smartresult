@@ -87,8 +87,27 @@ exports.generateResultPDF = (resultData) => {
           // Subjects
           if (sem.subjects && sem.subjects.length > 0) {
             sem.subjects.forEach((sub, i) => {
+              const code = sub.subjectCode || "-";
+              const name = sub.subjectName || "-";
+              const grade = sub.grade || "-";
+              // Use the status from the object, or derive it
+              let status = sub.status || "Passed";
+              if (
+                grade.toUpperCase() === "F" ||
+                grade.toUpperCase() === "FAIL" ||
+                grade.toUpperCase() === "ABSENT"
+              ) {
+                status = "Failed";
+              }
+
+              // Calculate dynamic row height based on subject name length
+              doc.fontSize(9);
+              const nameWidth = 250;
+              const nameHeight = doc.heightOfString(name, { width: nameWidth });
+              const rowHeight = Math.max(20, nameHeight + 10);
+
               // Check for page break inside table
-              if (currentY > 750) {
+              if (currentY + rowHeight > 750) {
                 doc.addPage();
                 currentY = 50;
                 // Re-draw header on new page
@@ -113,31 +132,21 @@ exports.generateResultPDF = (resultData) => {
                 currentY += 25;
               }
 
-              // Row background for readability (alternating)
-              if (i % 2 === 1) {
-                doc.rect(startX, currentY - 2, 500, 15).fill("#f9f9f9");
-                doc.fillColor("#000000");
+              // Row background for readability (alternating or failed)
+              if (status.toLowerCase().includes("fail")) {
+                doc.rect(startX, currentY, 500, rowHeight).fill("#ffebee");
+              } else if (i % 2 === 1) {
+                doc.rect(startX, currentY, 500, rowHeight).fill("#f9f9f9");
               }
 
-              const code = sub.subjectCode || "-";
-              const name = sub.subjectName || "-";
-              const grade = sub.grade || "-";
-              // Use the status from the object, or derive it
-              let status = sub.status || "Passed";
-              if (
-                grade.toUpperCase() === "F" ||
-                grade.toUpperCase() === "FAIL" ||
-                grade.toUpperCase() === "ABSENT"
-              ) {
-                status = "Failed";
-              }
+              doc.fillColor("#000000");
+              const textY = currentY + 5;
 
-              doc.fontSize(9);
-              doc.text(code, startX + 5, currentY, { width: 80 });
-              doc.text(name.substring(0, 60), startX + 90, currentY, {
-                width: 250,
-              }); // Truncate long names
-              doc.text(grade, startX + 350, currentY, {
+              doc.text(code, startX + 5, textY, { width: 80 });
+              doc.text(name, startX + 90, textY, {
+                width: nameWidth,
+              });
+              doc.text(grade, startX + 350, textY, {
                 width: 50,
                 align: "center",
               });
@@ -148,13 +157,13 @@ exports.generateResultPDF = (resultData) => {
               } else {
                 doc.fillColor("green");
               }
-              doc.text(status, startX + 410, currentY, {
+              doc.text(status, startX + 410, textY, {
                 width: 80,
                 align: "center",
               });
               doc.fillColor("black");
 
-              currentY += 15;
+              currentY += rowHeight;
             });
           } else {
             doc
