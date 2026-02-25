@@ -1,0 +1,38 @@
+<html>
+<body>
+
+<div class="container">
+    <h2>Result Details</h2>
+    <div id="resultContainer"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const data = JSON.parse(localStorage.getItem("resultData"));
+    const container = document.getElementById("resultContainer");
+
+    if (!container) {
+        console.error("resultContainer not found");
+        return;
+    }
+
+    if (!data) {
+        container.innerHTML = "<h3>No result data found.</h3>";
+        return;
+    }
+
+    let html = `
+        <h3>Name: ${data.name}</h3>
+        <h4>Semester: ${data.semester}</h4>
+        <h3>SGPA: ${data.sgpa}</h3>
+        <h3>CGPA: ${data.cgpa}</h3>
+    `;
+
+    container.innerHTML = html;
+
+});
+</script>
+
+</body>
+</html>

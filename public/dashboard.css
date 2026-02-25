@@ -1,0 +1,362 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family:
+    Inter,
+    system-ui,
+    Segoe UI,
+    Arial;
+  color: #0f172a;
+  background: #f7fafc;
+  margin: 0;
+}
+header.topbar {
+  height: 76px;
+  background: #ffffff;
+  border-bottom: 1px solid #e6eef7;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 28px;
+  justify-content: space-between;
+}
+header .brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+header .logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+header .app-title {
+  font-weight: 700;
+  font-size: 18px;
+}
+header .app-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+nav.nav {
+  display: flex;
+  gap: 8px;
+}
+button.nav-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+button.nav-btn.active {
+  background: linear-gradient(90deg, #eef2ff, #ecfeff);
+  color: #111827;
+}
+header .student-small {
+  text-align: right;
+}
+header .student-name {
+  font-weight: 700;
+}
+header .student-pin {
+  font-size: 12px;
+  color: #6b7280;
+}
+.content {
+  display: flex;
+  gap: 18px;
+  padding: 18px 28px;
+}
+.left-panel {
+  width: 260px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  height: calc(100vh - 120px);
+  overflow: auto;
+}
+.profile {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #60a5fa, #34d399);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+}
+.name {
+  font-weight: 700;
+}
+.meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+.progress-card {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+.label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+.progress-bar {
+  height: 12px;
+  background: #e6eef7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #34d399, #06b6d4);
+}
+.progress-meta {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 8px;
+}
+.semester-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.sem-card {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #eef2ff;
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  cursor: pointer;
+}
+.sem-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.sem-title {
+  font-weight: 700;
+}
+.sem-metrics {
+  font-size: 12px;
+  color: #475569;
+}
+.btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e6eef7;
+  background: white;
+  cursor: pointer;
+}
+.btn.primary {
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  color: white;
+  border: none;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.main-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.overview {
+  display: flex;
+  gap: 18px;
+}
+.overview-left {
+  flex: 1;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.overview-right {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.summary-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.summary-card {
+  flex: 1;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+.sum-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+.sum-value {
+  font-weight: 800;
+  font-size: 20px;
+}
+.charts {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chart-card {
+  flex: 1;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+}
+.chart-card.small {
+  flex: 0 0 240px;
+}
+.performance,
+.alerts {
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+}
+.perf-row {
+  font-size: 13px;
+  margin: 8px 0;
+}
+.badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.badge {
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.badge.success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+.badge.warn {
+  background: #fff7ed;
+  color: #92400e;
+}
+.badge.info {
+  background: #eef2ff;
+  color: #1e293b;
+}
+.alerts .alert {
+  padding: 8px;
+  background: #fffbeb;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+.alerts .alert.warn {
+  background: #fff1f2;
+}
+.subjects-panel {
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+  overflow: auto;
+  max-height: 46vh;
+}
+.semester-block {
+  border: 1px solid #eef2ff;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.semester-block .block-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: linear-gradient(90deg, #fbfdff, #ffffff);
+}
+.semester-block .block-body {
+  padding: 12px;
+}
+.subject-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.subject-table th {
+  background: #f8fafc;
+  padding: 8px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 13px;
+}
+.subject-table td {
+  padding: 8px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 13px;
+} /* grade colors */
+.grade-chip {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 700;
+}
+.g-S {
+  background: #10b981;
+}
+.g-A {
+  background: #3b82f6;
+}
+.g-B {
+  background: #60a5fa;
+}
+.g-C {
+  background: #f59e0b;
+}
+.g-D {
+  background: #ef4444;
+}
+.g-F {
+  background: #7f1d1d;
+}
+@media (max-width: 900px) {
+  .content {
+    flex-direction: column;
+  }
+  .left-panel {
+    width: 100%;
+    height: auto;
+  }
+  .overview {
+    flex-direction: column;
+  }
+  .overview-right {
+    width: 100%;
+  }
+  .chart-card.small {
+    flex: 1;
+  }
+}

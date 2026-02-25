@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartResult — Dashboard Mockup</title>
+    <link rel="stylesheet" href="dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img
+          src="logo.png"
+          alt="College"
+          class="logo"
+          onerror="this.style.display = 'none'" />
+        <div>
+          <div class="app-title">SmartResult</div>
+          <div class="app-sub">Student Portal</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active">My Results</button>
+        <button class="nav-btn">Analytics</button>
+        <button class="nav-btn">Downloads</button>
+      </nav>
+      <div class="student-small">
+        <div class="student-name" id="studentName">— Student Name —</div>
+        <div class="student-pin" id="studentPin">PIN: 248H5A0513</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <aside class="left-panel">
+        <div class="profile">
+          <div class="avatar">SJ</div>
+          <div>
+            <div class="name" id="profileName">Student Name</div>
+            <div class="meta">B.Tech, CSE</div>
+          </div>
+        </div>
+
+        <div class="progress-card">
+          <div class="label">Progress</div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              id="progressFill"
+              style="width: 65%"></div>
+          </div>
+          <div class="progress-meta">65% credits completed — 102 / 156</div>
+        </div>
+
+        <div class="semester-list" id="semesterList">
+          <!-- Semester cards injected here -->
+        </div>
+
+        <div class="actions">
+          <button class="btn primary">Download PDF</button>
+          <button class="btn">Semester Reports</button>
+        </div>
+      </aside>
+
+      <section class="main-panel">
+        <div class="overview">
+          <div class="overview-left">
+            <h2>Academic Summary</h2>
+            <div class="summary-row">
+              <div class="summary-card">
+                <div class="sum-label">Current CGPA</div>
+                <div class="sum-value" id="currentCgpa">8.54</div>
+              </div>
+              <div class="summary-card">
+                <div class="sum-label">Best SGPA</div>
+                <div class="sum-value" id="bestSgpa">9.17</div>
+              </div>
+              <div class="summary-card">
+                <div class="sum-label">Total Credits</div>
+                <div class="sum-value" id="totalCredits">156</div>
+              </div>
+            </div>
+
+            <div class="charts">
+              <div class="chart-card">
+                <canvas id="cgpaLine" height="160"></canvas>
+              </div>
+              <div class="chart-card small">
+                <canvas id="creditBar" height="160"></canvas>
+              </div>
+              <div class="chart-card small">
+                <canvas id="gradePie" height="160"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="overview-right">
+            <div class="performance">
+              <h3>Performance Analysis</h3>
+              <div class="perf-row">
+                <strong>Top Subject:</strong> Data Warehousing (GP: 9)
+              </div>
+              <div class="perf-row">
+                <strong>Lowest Subject:</strong> Universal Values (GP: 5)
+              </div>
+              <div class="perf-row">
+                <strong>Improvement:</strong> +3.1% vs last semester
+              </div>
+              <div class="perf-row">
+                <strong>Semester Growth:</strong> Stable
+              </div>
+              <div class="badges">
+                <span class="badge success">Consistent</span>
+                <span class="badge warn">Improve in D</span>
+                <span class="badge info">Excellent Labs</span>
+              </div>
+            </div>
+
+            <div class="alerts">
+              <h3>Alerts</h3>
+              <div class="alert">
+                You are 10 credits away from eligibility for honors.
+              </div>
+              <div class="alert warn">
+                One subject has 'D' — consider revaluation.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="subjects-panel" id="subjectsPanel">
+          <!-- Open two semesters by default -->
+        </div>
+      </section>
+    </main>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>
