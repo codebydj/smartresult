@@ -25,11 +25,17 @@ app.use(
           "https://cdnjs.cloudflare.com",
           "https://cdn.jsdelivr.net",
         ],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
+        ],
         connectSrc: [
           "'self'",
           "https://cdnjs.cloudflare.com",
           "https://www.student.apamaravathi.in",
+          "https://smartresult-y496.onrender.com",
         ],
       },
     },
