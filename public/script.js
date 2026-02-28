@@ -127,7 +127,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const grade = String(sub.grade || "")
       .trim()
       .toUpperCase();
+    // treat explicit F as failure
     if (grade === "F") return true;
+    // if the record says COMPLETED it's not a failure
+    if (grade === "COMPLETED") return false;
     // status like 'Absent'
     const status = String(sub.status || "")
       .trim()
@@ -376,6 +379,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function populateSemesterFilter(selectedIdx) {
+    if (!semesterFilter) return;
+    const list = window.lastSemesters || [];
+    if (typeof selectedIdx === "number" && list[selectedIdx]) {
+      const s = list[selectedIdx];
+      semesterFilter.innerHTML = `<option value="${selectedIdx}">Semester ${s.semester || selectedIdx + 1}</option>`;
+      semesterFilter.value = selectedIdx;
+    } else {
+      semesterFilter.innerHTML =
+        '<option value="all">All</option>' +
+        list
+          .map(
+            (s, i) =>
+              `<option value="${i}">Semester ${s.semester || i + 1}</option>`,
+          )
+          .join("");
+      semesterFilter.value = "all";
+    }
+  }
+
   function updateChartForOpenSemester() {
     const openBody = document.querySelector(".accordion-body.open");
     if (openBody) {
@@ -383,47 +406,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const sem = (window.lastSemesters || [])[Number(idx)];
       if (sem && sem.subjects) {
         buildSubjectChart(sem.subjects);
-        updatePerfText(Number(idx));
+        populateSemesterFilter(Number(idx));
+        updatePerfText();
         return;
       }
     }
     // no open semester -> default overall
     buildBarChart(window.lastSemesters || []);
+    populateSemesterFilter();
     updatePerfText();
   }
 
-  function updatePerfText(idx) {
+  // always compare the first two (latest) semesters; idx parameter is ignored since
+  // the requirement is to show improvement/decrease based on the most recent pair.
+  function updatePerfText(/* idx */) {
     const perfEl = document.getElementById("perfText");
     if (!perfEl) return;
     let html = "";
     const list = window.lastSemesters || [];
-    if (typeof idx === "number") {
-      const i = Number(idx);
-      const sem = list[i];
-      const prev = list[i + 1];
-      if (sem && prev) {
-        const latest = parseFloat(sem.sgpa) || 0;
-        const p = parseFloat(prev.sgpa) || 0;
-        const diff = latest - p;
-        if (diff > 0)
-          html = `<div class="performance-text perf-improved">↑ Performance Improved by +${diff.toFixed(2)} SGPA</div>`;
+    if (list && list.length >= 2) {
+      const latest = parseFloat(list[list.length - 1].sgpa) || 0;
+      const prev = parseFloat(list[list.length - 2].sgpa) || 0;
+      const diff = latest - prev;
+      if (diff > 0)
+        html = `<div class="performance-text perf-improved">🔼 Performance Improved by +${diff.toFixed(2)} SGPA 🎉</div>`;
         else if (diff < 0)
-          html = `<div class="performance-text perf-decreased">↓ Performance Decreased by ${diff.toFixed(2)} SGPA</div>`;
-        else
-          html = `<div class="performance-text perf-nochange">↔ Performance unchanged from previous semester</div>`;
-      }
-    } else {
-      if (list && list.length >= 2) {
-        const latest = parseFloat(list[0].sgpa) || 0;
-        const prev = parseFloat(list[1].sgpa) || 0;
-        const diff = latest - prev;
-        if (diff > 0)
-          html = `<div class="performance-text perf-improved">↑ Performance Improved by +${diff.toFixed(2)} SGPA</div>`;
-        else if (diff < 0)
-          html = `<div class="performance-text perf-decreased">↓ Performance Decreased by ${diff.toFixed(2)} SGPA</div>`;
-        else
-          html = `<div class="performance-text perf-nochange">↔ Performance unchanged from previous semester</div>`;
-      }
+        html = `<div class="performance-text perf-decreased">🔽 Performance Decreased by ${diff.toFixed(2)} SGPA ☹️</div>`;
+      else
+        html = `<div class="performance-text perf-nochange"> 🟰 Performance unchanged from previous semester 😧</div>`;
     }
     perfEl.innerHTML = html;
   }
@@ -451,17 +461,8 @@ document.addEventListener("DOMContentLoaded", () => {
       buildBarChart(data.semesters || []);
       window.lastSemesters = data.semesters || [];
       updatePerfText();
-      // populate filter
-      if (semesterFilter) {
-        semesterFilter.innerHTML =
-          '<option value="all">All</option>' +
-          (data.semesters || [])
-            .map(
-              (s, i) =>
-                `<option value="${i}">Semester ${s.semester || i + 1}</option>`,
-            )
-            .join("");
-      }
+      // populate filter using centralized helper
+      populateSemesterFilter();
       if (downloadPdfBtn) {
         downloadPdfBtn.href = `/api/v1/result/${data.pin}/download-pdf`;
         downloadPdfBtn.setAttribute("download", `Result_${data.pin}.pdf`);
@@ -498,12 +499,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const v = this.value;
       if (v === "all") {
         buildBarChart(window.lastSemesters || []);
-        updatePerfText();
       } else {
         const s = (window.lastSemesters || [])[Number(v)];
         if (s) buildSubjectChart(s.subjects || []);
-        updatePerfText(Number(v));
       }
+      updatePerfText();
     });
 
   // initialize history on load
