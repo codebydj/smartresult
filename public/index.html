@@ -46,12 +46,12 @@
     </div>
 
     <!-- Main Container -->
-    <main class="container py-6">
-      <div class="row justify-content-center">
+    <main class="container py-6 " >
+      <div class="row justify-content-center" > 
         <div class="col-lg-6 col-md-8">
           <!-- Hero Section -->
           <div class="text-center mb-4 hero-section">
-            <img src="/mvrlogo.jpeg" alt="MVR Logo" class="hero-logo mb-3" width="50%" height="100%" />
+            <img src="/mvrlogo.jpeg" alt="MVR Logo" class="hero-logo mb-3" width="60%" height="100%" />
             <h1 class="display-5 fw-bold mb-2">Student Result Portal</h1>
             <p class="lead text-muted mb-4">Track your academic performance, analyze grades, and monitor progress</p>
             <form id="searchForm" class="d-flex justify-content-center gap-2">
@@ -70,6 +70,29 @@
           <!-- Result Section -->
           <div id="resultContainer" class="mt-4" style="display:none">
             <div id="result" class="animate-in"></div>
+            <div class="mt-3 d-flex gap-2">
+              <button id="downloadPdfBtn" class="download-btn pixel-corners m-auto">
+                <div class="button-content">
+                  <div class="svg-container">
+                    <svg
+                      class="download-icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19.479 10.092c-.212-3.951-3.473-7.092-7.479-7.092-4.005 0-7.267 3.141-7.479 7.092-2.57.463-4.521 2.706-4.521 5.408 0 3.037 2.463 5.5 5.5 5.5h13c3.037 0 5.5-2.463 5.5-5.5 0-2.702-1.951-4.945-4.521-5.408zm-7.479 6.908l-4-4h3v-4h2v4h3l-4 4z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div class="text-container">
+                    <div class="text">Download PDF</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+            <div id="downloadDetails" class="mt-2 text-muted small"></div>
           </div>
 
           <!-- Graph + PDF -->
@@ -84,10 +107,6 @@
             </div>
             <canvas id="sgpaChart" height="120"></canvas>
             <div id="perfText" class="mt-2"></div>
-            <div class="mt-3 d-flex gap-2">
-              <a id="downloadPdfBtn" class="btn btn-outline-primary btn-sm ms-auto">Download PDF</a>
-            </div>
-            <div id="downloadDetails" class="mt-2 text-muted small"></div>
           </div>
 
           <!-- Info Cards -->
