@@ -3,14 +3,15 @@ const router = express.Router();
 
 const resultController = require("../controllers/resultController");
 const dashboardController = require("../controllers/dashboardController");
+const validatePin = require("../middleware/validatePin");
 
 // ============================================
 // RESULT ROUTES
 // ============================================
 
-// Get/Scrape result and store in DB
-router.get("/result", resultController.getResult);
-router.post("/result", resultController.getResult);
+// Get/Scrape result and store in DB (validate PIN)
+router.get("/result", validatePin, resultController.getResult);
+router.post("/result", validatePin, resultController.getResult);
 
 // Test endpoint with sample data
 router.get("/test/result", resultController.getTestResult);

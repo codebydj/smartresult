@@ -1,5 +1,13 @@
 const puppeteer = require("puppeteer");
 
+/**
+ * Scraper service - getResult
+ * Scrapes the student result page using Puppeteer and returns structured JSON
+ * - Ensures browser is closed on error/timeout
+ * - Throws friendly error messages for upstream handling
+ * @param {string} pin
+ * @returns {Promise<Object>} parsed result
+ */
 async function getResult(pin) {
   let browser;
   try {
@@ -434,7 +442,6 @@ async function getResult(pin) {
             code.startsWith("&lt;") ||
             /^>=|≥|&gt;=|&ge;/.test(code) ||
             /^<|&lt;/.test(code) ||
-
             /^[<>≥≤=]/.test(nameSub) ||
             nameSub.startsWith("&gt;") ||
             nameSub.startsWith("&lt;") ||
@@ -451,7 +458,6 @@ async function getResult(pin) {
             /^(Range|Class Awarded|Letter Grade|Grade Points)/i.test(nameSub) ||
             code.includes("Range in which") ||
             nameSub.includes("Range in which") ||
-
             (/superior|excellent|very good|good|average|pass|fail/i.test(
               nameSub,
             ) &&
@@ -484,7 +490,6 @@ async function getResult(pin) {
 
           if (!subjSeen.has(subKey)) {
             subjSeen.add(subKey);
-
 
             // Requirement 1: Status logic - Mark F as Failed, everything else as Passed
             let finalStatus = "Passed";

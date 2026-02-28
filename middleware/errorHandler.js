@@ -1,5 +1,5 @@
 const errorHandler = (err, req, res, next) => {
-  console.error("Error:", err);
+  console.error("Error:", err.message || err);
 
   // Default error
   let statusCode = err.statusCode || 500;
@@ -16,25 +16,14 @@ const errorHandler = (err, req, res, next) => {
   // Mongoose duplicate key error
   if (err.code === 11000) {
     statusCode = 400;
-    const field = Object.keys(err.keyPattern)[0];
+    const field = Object.keys(err.keyPattern || {})[0] || "field";
     message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
   }
 
-  // JWT errors
-  if (err.name === "JsonWebTokenError") {
-    statusCode = 401;
-    message = "Invalid token";
-  }
+  const payload = { success: false, message };
+  if (process.env.NODE_ENV === "development") payload.stack = err.stack;
 
-  if (err.name === "TokenExpiredError") {
-    statusCode = 401;
-    message = "Token expired";
-  }
-
-  res.status(statusCode).json({
-    error: message,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
-  });
+  res.status(statusCode).json(payload);
 };
 
 module.exports = errorHandler;

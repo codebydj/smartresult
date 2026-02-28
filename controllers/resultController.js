@@ -5,23 +5,43 @@ const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 
-// Get result and store in database
+/**
+ * Controller: getResult
+ * - Validates and uses sanitized PIN from middleware
+ * - Returns cached DB result if younger than 10 minutes
+ * - Otherwise scrapes fresh result, upserts into MongoDB and returns it
+ * @route POST/GET /api/v1/result
+ */
 exports.getResult = async (req, res, next) => {
-  const pin = req.body?.pin || req.query?.pin;
+  // Prefer sanitized pin from middleware
+  const pin = req.cleanPin || req.body?.pin || req.query?.pin;
 
   if (!pin) {
-    return res.status(400).json({ error: "PIN is required" });
+    return res.status(400).json({ success: false, message: "PIN is required" });
   }
 
   console.log("🔍 Fetching result for PIN:", pin);
   try {
-    let scrapedData;
+    // 1) Check cache (MongoDB) - if available and fresh (<10 minutes), return it
+    const freshMs = 10 * 60 * 1000; // 10 minutes
+    if (mongoose.connection.readyState === 1) {
+      const existing = await Result.findOne({ pin: pin.toUpperCase() }).lean();
+      if (existing && existing.createdAt) {
+        const age = Date.now() - new Date(existing.createdAt).getTime();
+        if (age <= freshMs) {
+          console.log("⏱ Returning cached result for PIN:", pin);
+          return res.json({ success: true, cached: true, data: existing });
+        }
+      }
+    }
 
-    // Use mock data if MOCK_MODE is enabled
+    // 2) Fetch from scraper / mock
+    let scrapedData;
     if (process.env.MOCK_MODE === "true") {
       console.log("📋 Using MOCK MODE - returning test data");
       scrapedData = {
-        studentName: "Mock Student - " + pin.substring(0, 5).toUpperCase(),
+        studentName:
+          "Mock Student - " + String(pin).substring(0, 5).toUpperCase(),
         name: "Mock Student",
         rollNumber: "MOCK001",
         semesters: [
@@ -39,78 +59,42 @@ exports.getResult = async (req, res, next) => {
                 credit: "4",
                 points: "36",
               },
-              {
-                subjectCode: "CS102",
-                subjectName: "Data Structures",
-                gradePoint: "8",
-                grade: "B",
-                status: "Passed",
-                credit: "3",
-                points: "24",
-              },
             ],
           },
         ],
       };
     } else {
-      // Fetch from actual scraper
       scrapedData = await getResult(pin);
     }
 
-    console.log(
-      "✓ Scraper returned data:",
-      JSON.stringify(scrapedData).substring(0, 200),
-    );
-
-    // Check if student name exists. If not, the PIN is likely invalid.
-    if (
-      !scrapedData ||
-      !scrapedData.studentName ||
-      scrapedData.studentName.trim() === ""
-    ) {
-      return res
-        .status(400)
-        .json({ error: "Invalid PIN. Student details not found." });
-    }
-
-    if (
-      !scrapedData ||
-      !scrapedData.semesters ||
-      scrapedData.semesters.length === 0
-    ) {
-      console.warn("⚠️  No semesters found in scraped data:", scrapedData);
-      return res.status(400).json({
-        error:
-          "No result data found for the provided PIN. Please check the PIN and try again. (Scraped data: " +
-          JSON.stringify(scrapedData).substring(0, 100) +
-          ")",
+    // Basic validation on scraped output
+    if (!scrapedData || !scrapedData.studentName) {
+      return res.status(404).json({
+        success: false,
+        message: "Result not found. Please check your PIN.",
       });
     }
 
-    // Prepare data for storage
+    if (!scrapedData.semesters || scrapedData.semesters.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No semester data found for this PIN.",
+      });
+    }
+
+    // Prepare DB document
     const resultData = {
-      pin: pin.toLowerCase(),
-      name:
-        scrapedData.name ||
-        scrapedData.studentName ||
-        scrapedData.Name ||
-        scrapedData.StudentName ||
-        scrapedData["Student Name"] ||
-        "N/A",
-      studentName:
-        scrapedData.studentName ||
-        scrapedData.name ||
-        scrapedData.StudentName ||
-        scrapedData.Name ||
-        scrapedData["Student Name"] ||
-        "N/A",
+      pin: String(pin).toUpperCase(),
+      name: scrapedData.name || scrapedData.studentName || "N/A",
+      studentName: scrapedData.studentName || scrapedData.name || "N/A",
       rollNumber: scrapedData.rollNumber || null,
       semesters: scrapedData.semesters || [],
-      ipAddress: req.ip || req.connection.remoteAddress,
+      ipAddress: req.ip || req.connection?.remoteAddress,
       scrapedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    // Calculate aggregates if available
     if (scrapedData.semesters && scrapedData.semesters.length > 0) {
       const lastSem = scrapedData.semesters[scrapedData.semesters.length - 1];
       resultData.overallCGPA = lastSem.cgpa || null;
@@ -118,66 +102,38 @@ exports.getResult = async (req, res, next) => {
       resultData.totalSemesters = scrapedData.semesters.length;
     }
 
-    // Calculate failed count
+    // compute failed count
     let failedCount = 0;
-    if (scrapedData.semesters) {
-      scrapedData.semesters.forEach((sem) => {
-        if (sem.subjects) {
-          sem.subjects.forEach((sub) => {
-            const grade = (sub.grade || "").toUpperCase();
-            const status = (sub.status || "").toLowerCase();
-            if (grade === "F" || grade === "FAIL" || status.includes("fail")) {
-              failedCount++;
-            }
-          });
-        }
+    scrapedData.semesters.forEach((sem) => {
+      (sem.subjects || []).forEach((sub) => {
+        const grade = (sub.grade || "").toString().toUpperCase();
+        const status = (sub.status || "").toString().toLowerCase();
+        if (grade === "F" || grade === "FAIL" || status.includes("fail"))
+          failedCount++;
       });
-    }
+    });
     resultData.failedCount = failedCount;
 
-    // Try to save to database (optional - run without DB if not available)
+    // Save to DB if connected (upsert)
     let storedResult = resultData;
-    try {
-      // Check if result already exists
-      const existingResult = await Result.findOne({ pin: pin.toLowerCase() });
-
-      if (existingResult) {
-        // Update existing result
-        storedResult = Object.assign(existingResult, resultData);
-        await storedResult.save();
-      } else {
-        // Create new result
-        storedResult = await Result.create(resultData);
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const updated = await Result.findOneAndUpdate(
+          { pin: resultData.pin },
+          { $set: resultData },
+          { new: true, upsert: true, setDefaultsOnInsert: true },
+        ).lean();
+        storedResult = updated || resultData;
+      } catch (dbErr) {
+        console.warn("⚠️ Database save/update failed:", dbErr.message);
+        storedResult = resultData; // return scraped data
       }
-    } catch (dbErr) {
-      console.warn(
-        "⚠️  Database save failed, returning scraped data anyway:",
-        dbErr.message,
-      );
-      // Return scraped data even if DB is not available
-      storedResult = resultData;
     }
 
-    res.json({
-      message: "Result fetched successfully",
-      data: storedResult,
-    });
+    return res.json({ success: true, cached: false, data: storedResult });
   } catch (err) {
     console.error("❌ Error fetching result:", err.message);
-    console.error("Stack trace:", err.stack);
-
-    // Return a helpful error message
-    const errorMessage = err.message.includes("timeout")
-      ? "Request timed out. The website might be down or slow."
-      : err.message.includes("Cannot reach")
-        ? "Cannot reach the result website. Check your internet connection."
-        : err.message ||
-          "Failed to fetch result. The website might be down or the PIN may be invalid.";
-
-    res.status(500).json({
-      error: errorMessage,
-      details: process.env.NODE_ENV === "development" ? err.message : undefined,
-    });
+    return next(err);
   }
 };
 
@@ -187,18 +143,20 @@ exports.getResultByPin = async (req, res, next) => {
     const { pin } = req.params;
 
     if (!pin) {
-      return res.status(400).json({ error: "PIN is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "PIN is required" });
     }
 
     const result = await Result.findOne({ pin: pin.toLowerCase() });
 
     if (!result) {
-      return res.status(404).json({ error: "Result not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Result not found" });
     }
 
-    res.json({
-      data: result,
-    });
+    res.json({ success: true, data: result });
   } catch (error) {
     next(error);
   }

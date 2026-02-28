@@ -23,7 +23,11 @@ const resultSchema = new mongoose.Schema(
       type: String,
       required: [true, "PIN is required"],
       trim: true,
-      lowercase: true,
+      uppercase: true,
+      match: [
+        /^[0-9A-Z]{10}$/,
+        "PIN must be 10 characters: digits and uppercase letters only",
+      ],
     },
     studentName: String,
     name: {
@@ -69,8 +73,13 @@ const resultSchema = new mongoose.Schema(
 );
 
 // Indexes
+// Indexes
+// Pin index for fast lookups
 resultSchema.index({ pin: 1 });
 resultSchema.index({ studentName: "text", name: "text" });
 resultSchema.index({ createdAt: -1 });
+
+// Optional TTL index (uncomment to enable automatic expiry)
+// resultSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 }); // 7 days
 
 module.exports = mongoose.model("Result", resultSchema);
