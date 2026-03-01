@@ -194,7 +194,13 @@ const generateResultPDF = (resultData) => {
                 status = "Passed";
               }
 
-              // Draw row text
+              // Draw row text (normalize numeric placeholders)
+              const norm = (v) => {
+                const n = parseFloat(String(v || "").replace(/[^0-9.\-]/g, ""));
+                if (isNaN(n)) return "";
+                return n === 999 ? "0" : n.toString();
+              };
+
               doc.text(sub.subjectCode || "", colX.code, rowY, {
                 width: colWidths.code,
               });
@@ -205,7 +211,7 @@ const generateResultPDF = (resultData) => {
                 width: colWidths.grade,
                 align: "center",
               });
-              doc.text(sub.credit || "", colX.credit, rowY, {
+              doc.text(norm(sub.credit || ""), colX.credit, rowY, {
                 width: colWidths.credit,
                 align: "center",
               });
@@ -213,7 +219,7 @@ const generateResultPDF = (resultData) => {
                 width: colWidths.status,
                 align: "center",
               });
-              doc.text(sub.points || "", colX.points, rowY, {
+              doc.text(norm(sub.points || ""), colX.points, rowY, {
                 width: colWidths.points,
                 align: "center",
               });

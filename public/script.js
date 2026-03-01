@@ -122,25 +122,35 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Render accordion for semesters
+  // helpers for sanitizing numeric values that may be placeholders
+  function normalizeNumber(val) {
+    const n = parseFloat(String(val || "").replace(/[^0-9.\-]/g, ""));
+    if (isNaN(n)) return NaN;
+    // treat 999 as missing -> zero
+    if (n === 999) return 0;
+    return n;
+  }
+
   function isFailed(sub) {
     if (!sub) return false;
     const grade = String(sub.grade || "")
       .trim()
       .toUpperCase();
-    // treat explicit F as failure
-    if (grade === "F") return true;
+    // treat explicit F or FAIL as failure
+    if (grade === "F" || grade === "FAIL") return true;
     // if the record says COMPLETED it's not a failure
     if (grade === "COMPLETED") return false;
-    // status like 'Absent'
+    // status like 'Absent' or contains fail
     const status = String(sub.status || "")
       .trim()
       .toLowerCase();
-    if (status && status.includes("absent")) return true;
-    // treat special numeric markers as failure (e.g., 999 or 0)
+    if (status && (status.includes("absent") || status.includes("fail")))
+      return true;
+    // treat explicit zero as failure; ignore 999 placeholders here
     const vals = [sub.marks, sub.gradePoint, sub.points, sub.total];
     for (const v of vals) {
-      const n = parseFloat(String(v || "").replace(/[^0-9.\-]/g, ""));
-      if (!isNaN(n) && (n === 999 || n === 0)) return true;
+      const raw = parseFloat(String(v || "").replace(/[^0-9.\-]/g, ""));
+      if (!isNaN(raw) && raw === 0) return true;
     }
     return false;
   }
@@ -181,12 +191,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const rows = subjects
         .map((s) => {
           const failed = isFailed(s);
+          // display grade point/total normalized, convert 999->0
+          const gpNum = normalizeNumber(s.gradePoint ?? s.total ?? "");
+          const gpText = isNaN(gpNum) ? "" : gpNum.toString();
+          const creditText = (() => {
+            const cnum = normalizeNumber(s.credit ?? s.credits ?? "");
+            return isNaN(cnum) ? "" : cnum.toString();
+          })();
+
           return `<tr class="${failed ? "failed-subject" : ""}">
             <td>${s.subjectCode || ""}</td>
             <td>${s.subjectName || ""}</td>
             <td>${s.grade || ""}</td>
-            <td>${s.gradePoint || s.total || ""}</td>
-            <td>${s.credit || s.credits || ""}${
+            <td>${gpText}</td>
+            <td>${creditText}${
               failed ? '<span class="failed-badge">FAILED</span>' : ""
             }</td>
           </tr>`;
@@ -232,16 +250,16 @@ document.addEventListener("DOMContentLoaded", () => {
       data.overallCGPA ||
       (data.semesters && data.semesters[0] && data.semesters[0].cgpa) ||
       "N/A";
-    let status = "PASS";
-    if (data.failedCount && Number(data.failedCount) > 0) status = "FAIL";
-    if (!data.semesters || !data.semesters.length) status = "WITHHELD";
-
     const totalFailed = (data.semesters || []).reduce(
       (sum, sem) =>
         sum +
         (sem.subjects || []).reduce((c, s) => (isFailed(s) ? c + 1 : c), 0),
       0,
     );
+
+    let status = "PASS";
+    if (totalFailed > 0) status = "FAIL";
+    if (!data.semesters || !data.semesters.length) status = "WITHHELD";
     const statusText = totalFailed > 0 ? `${status}[${totalFailed}]` : status;
 
     const container = document.createElement("div");
@@ -269,9 +287,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let totalCredits = 0;
       semesters.forEach((sem) => {
         (sem.subjects || []).forEach((s) => {
-          const credit = parseFloat(s.credit ?? s.credits ?? 0) || 0;
-          const pointsVal = parseFloat(s.points ?? "") || NaN;
-          const gp = parseFloat(s.gradePoint ?? "") || NaN;
+          const credit = normalizeNumber(s.credit ?? s.credits ?? 0) || 0;
+          const pointsVal = normalizeNumber(s.points ?? "");
+          const gp = normalizeNumber(s.gradePoint ?? "");
           if (!isNaN(pointsVal)) {
             totalPoints += pointsVal;
           } else if (!isNaN(gp)) {
@@ -340,7 +358,9 @@ document.addEventListener("DOMContentLoaded", () => {
       (s) => s.subjectCode || s.subjectName || "",
     );
     const data = (subjects || []).map((s) => {
-      let v = parseFloat(s.marks ?? s.gradePoint ?? s.points ?? s.total ?? "");
+      let v = normalizeNumber(
+        s.marks ?? s.gradePoint ?? s.points ?? s.total ?? "",
+      );
       if (isNaN(v)) v = null;
       return v;
     });
@@ -382,19 +402,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function populateSemesterFilter(selectedIdx) {
     if (!semesterFilter) return;
     const list = window.lastSemesters || [];
+    // always include full set of options
+    semesterFilter.innerHTML =
+      '<option value="all">All</option>' +
+      list
+        .map(
+          (s, i) =>
+            `<option value="${i}">Semester ${s.semester || i + 1}</option>`,
+        )
+        .join("");
     if (typeof selectedIdx === "number" && list[selectedIdx]) {
-      const s = list[selectedIdx];
-      semesterFilter.innerHTML = `<option value="${selectedIdx}">Semester ${s.semester || selectedIdx + 1}</option>`;
       semesterFilter.value = selectedIdx;
     } else {
-      semesterFilter.innerHTML =
-        '<option value="all">All</option>' +
-        list
-          .map(
-            (s, i) =>
-              `<option value="${i}">Semester ${s.semester || i + 1}</option>`,
-          )
-          .join("");
       semesterFilter.value = "all";
     }
   }
