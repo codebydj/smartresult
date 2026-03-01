@@ -88,7 +88,6 @@ body {
   border-color: var(--primary);
   box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
 }
-
 .form-label {
   color: var(--dark);
   margin-bottom: 0.5rem;

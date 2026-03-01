@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="history-pin">${i.pin}</div>
           <div class="history-name">${i.name || ""}</div>
         </div>
-        <div class="history-actions"><button class="btn btn-sm btn-link load-btn">Load</button></div>
+        <div class="history-actions"><button class="btn btn-sm btn-link load-btn">GET</button></div>
       </div>
     `,
         )
@@ -430,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const diff = latest - prev;
       if (diff > 0)
         html = `<div class="performance-text perf-improved">🔼 Performance Improved by +${diff.toFixed(2)} SGPA 🎉</div>`;
-        else if (diff < 0)
+      else if (diff < 0)
         html = `<div class="performance-text perf-decreased">🔽 Performance Decreased by ${diff.toFixed(2)} SGPA ☹️</div>`;
       else
         html = `<div class="performance-text perf-nochange"> 🟰 Performance unchanged from previous semester 😧</div>`;
@@ -464,8 +464,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // populate filter using centralized helper
       populateSemesterFilter();
       if (downloadPdfBtn) {
-        downloadPdfBtn.href = `/api/v1/result/${data.pin}/download-pdf`;
-        downloadPdfBtn.setAttribute("download", `Result_${data.pin}.pdf`);
+        downloadPdfBtn.onclick = () => {
+          window.location.href = `/api/v1/result/${data.pin}/download-pdf`;
+        };
       }
       saveHistory(data.pin, data.studentName || data.name || "");
     } catch (err) {

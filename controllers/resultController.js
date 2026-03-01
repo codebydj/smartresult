@@ -148,7 +148,7 @@ exports.getResultByPin = async (req, res, next) => {
         .json({ success: false, message: "PIN is required" });
     }
 
-    const result = await Result.findOne({ pin: pin.toLowerCase() });
+    const result = await Result.findOne({ pin: pin.toUpperCase() });
 
     if (!result) {
       return res
@@ -175,7 +175,7 @@ exports.getPublicStats = async (req, res) => {
 // Download result as PDF
 exports.downloadResultPDF = async (req, res, next) => {
   try {
-    const pin = (req.params.pin || "").trim().toLowerCase();
+    const pin = (req.params.pin || "").trim().toUpperCase();
     let resultData = null;
 
     // 1. Try to get from DB if connected
