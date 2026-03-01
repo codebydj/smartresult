@@ -490,6 +490,11 @@ nav.navbar .btn-outline-primary:hover {
   font-weight: 600;
   white-space: nowrap;
 }
+@media screen and (max-width: 450px) {
+  #searchForm{
+    flex-wrap: wrap;
+  }
+}
 
 /* Accordion styles */
 .accordion-custom {

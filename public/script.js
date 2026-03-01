@@ -121,6 +121,77 @@ document.addEventListener("DOMContentLoaded", () => {
       historyPanel.style.display = "none";
   });
 
+  // Gaming rank system
+  function getRank(cgpa) {
+    const val = parseFloat(cgpa || 0);
+    if (val >= 9.5)
+      return {
+        name: "Conqueror/Heroic",
+        emoji: "",
+        badge: "🔥",
+        color: "#FFD700",
+      };
+    if (val >= 8.5)
+      return { name: "Diamond", emoji: "💎", badge: "💎", color: "#00CED1" };
+    if (val >= 7.5)
+      return { name: "Platinum", emoji: "🟣", badge: "🟣", color: "#9370DB" };
+    if (val >= 6.5)
+      return { name: "Gold", emoji: "🟡", badge: "🟡", color: "#FFD700" };
+    if (val >= 5.5)
+      return { name: "Silver", emoji: "⚪", badge: "⚪", color: "#C0C0C0" };
+    if (val >= 4.5)
+      return { name: "Bronze", emoji: "🟤", badge: "🟤", color: "#CD7F32" };
+    return { name: "noob", emoji: "💀", badge: "💀", color: "#8B0000" };
+  }
+
+  function renderRankingTable(targetElement) {
+    const rankTable = targetElement || document.getElementById("rankingTable");
+    if (!rankTable) return;
+
+    const ranks = [
+      {
+        range: "9.5 – 10",
+        name: "Conqueror/Heroic",
+        emoji: "👑",
+        badge: "🏆🔥",
+      },
+      { range: "8.5 – 9.4", name: "Diamond", emoji: "💎", badge: "💎" },
+      { range: "7.5 – 8.4", name: "Platinum", emoji: "🟣", badge: "🟣" },
+      { range: "6.5 – 7.4", name: "Gold", emoji: "🟡", badge: "🟡" },
+      { range: "5.5 – 6.4", name: "Silver", emoji: "⚪", badge: "⚪" },
+      { range: "4.5 – 5.4", name: "Bronze", emoji: "🟤", badge: "🟤" },
+      { range: "Below 4.5", name: "noob", emoji: "💀", badge: "💀" },
+    ];
+
+    rankTable.innerHTML = `
+      <div style="margin-top: 2rem; margin-bottom: 3rem; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+        <h5 style="margin-bottom: 1rem; text-align: center; color: #333;">🎮 Gaming Rank Levels</h5>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="background: #007bff; color: white;">
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">SGPA Range</th>
+              <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Gaming Rank</th>
+              <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Badge Style</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${ranks
+              .map(
+                (r) => `
+              <tr style="background: ${ranks.indexOf(r) % 2 === 0 ? "#fff" : "#f0f0f0"}; border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px; border: 1px solid #ddd;">${r.range}</td>
+                <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${r.emoji} ${r.name}</td>
+                <td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 1.2rem;">${r.badge}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
   // Render accordion for semesters
   // helpers for sanitizing numeric values that may be placeholders
   function normalizeNumber(val) {
@@ -272,7 +343,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <div id="totalGradePoints" class="text-muted small mt-1"></div>
         </div>
         <div class="text-end">
-          <div style="font-size:0.95rem"><strong>CGPA:</strong> <span style="color:var(--primary)">${cgpa}</span></div>
+          <div style="font-size:0.95rem">
+            <strong>CGPA:</strong> <span style="color:var(--primary)">${cgpa}</span>
+          </div>
+          <div style="font-size:0.85rem; margin-top: 0.3rem;">
+            ${cgpa !== "N/A" ? `<span style="font-weight:600;">${getRank(cgpa).emoji} ${getRank(cgpa).name}</span>` : ""}
+          </div>
           <div class="mt-1"><span class="status-badge ${status === "PASS" ? "pass" : "fail"}">${statusText}</span></div>
         </div>
       </div>
@@ -305,8 +381,27 @@ document.addEventListener("DOMContentLoaded", () => {
       /* ignore */
     }
     renderAccordion(data.semesters || []);
+
     resultContainer.style.display = "block";
     graphSection.style.display = "block";
+
+    // Hide static ranking table and show result-specific ranking below graph
+    const staticRankingTable = document.getElementById("staticRankingTable");
+    if (staticRankingTable) {
+      staticRankingTable.style.display = "none";
+    }
+
+    // Add ranking table below graph section
+    let rankingTableDiv = document.getElementById("resultRankingTable");
+    if (!rankingTableDiv) {
+      rankingTableDiv = document.createElement("div");
+      rankingTableDiv.id = "resultRankingTable";
+      graphSection.parentNode.insertBefore(
+        rankingTableDiv,
+        graphSection.nextSibling,
+      );
+    }
+    renderRankingTable(rankingTableDiv);
   }
 
   function buildBarChart(semesters) {
