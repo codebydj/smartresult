@@ -25,6 +25,7 @@ nav.navbar {
   background: #ffffff !important;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 0 20px;
 }
 
 nav.navbar .navbar-brand {
@@ -872,10 +873,10 @@ footer {
   align-items: center;
 }
   .container {
-    max-width: 95%;
-    padding: 0 15px;
+    max-width: 100%;
+    padding: 0 0px;
   }
-}
+
 
 @media (max-width: 768px) {
   .display-5 {
