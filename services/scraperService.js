@@ -23,7 +23,6 @@ async function getResult(pin) {
         "--no-zygote",
       ],
       ignoreHTTPSErrors: true,
-      dumpio: true,
     };
 
     browser = await Promise.race([
@@ -673,7 +672,10 @@ async function getResult(pin) {
 
     throw err;
   } finally {
-    if (browser) await browser.close();
+    // 🔥 THIS IS WHERE YOU ADD IT
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
