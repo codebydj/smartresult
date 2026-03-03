@@ -36,14 +36,14 @@ const generateResultPDF = (resultData) => {
       doc
         .fontSize(20)
         .font("Helvetica-Bold")
-        .text("SmartResult", { align: "center" });
+        .text("SmartResultMVR", { align: "center" });
 
       doc
         .fontSize(10)
         .font("Helvetica")
         .text("Student Performance Report", { align: "center" });
 
-      doc.moveDown(2);
+      doc.moveDown(1);
 
       // Student Info Box
       doc.rect(50, doc.y, 495, 80).stroke();
@@ -53,7 +53,10 @@ const generateResultPDF = (resultData) => {
       doc.text("Name:", 70, infoY);
       doc
         .font("Helvetica")
-        .text(resultData.studentName || resultData.name || "N/A", 150, infoY);
+        .text(resultData.studentName || resultData.name || "N/A", 150, infoY, {
+          width: 300,
+          ellipsis: true,
+        });
 
       doc.font("Helvetica-Bold").text("PIN:", 70, infoY + 20);
       doc.font("Helvetica").text(resultData.pin, 150, infoY + 20);
@@ -66,7 +69,8 @@ const generateResultPDF = (resultData) => {
       doc.font("Helvetica-Bold").text("Generated:", 300, infoY);
       doc.font("Helvetica").text(new Date().toLocaleDateString(), 380, infoY);
 
-      doc.moveDown(4);
+      doc.y = infoY + 65;
+      doc.moveDown(1);
 
       // Summary
       if (resultData.overallCGPA || resultData.overallSGPA) {
@@ -82,56 +86,89 @@ const generateResultPDF = (resultData) => {
           summaryText.push(`Failed Subjects: ${resultData.failedCount}`);
 
         doc.fontSize(12).font("Helvetica").text(summaryText.join("  |  "));
-        doc.moveDown(2);
+        doc.moveDown(1);
       }
 
       // Semesters
       if (resultData.semesters && resultData.semesters.length > 0) {
+        let semsOnPage = 0;
         resultData.semesters.forEach((sem) => {
-          // Check for page break
-          if (doc.y > 680) doc.addPage();
+          // start a new page if previous semester pushed us past limit or
+          // if we've already placed two semesters on the current page
+          if (doc.y > 720 || semsOnPage >= 2) {
+            doc.addPage();
+            semsOnPage = 0;
+          }
 
+          // coloured background for semester heading
+          const headingHeight = 20;
+          doc.rect(50, doc.y, 495, headingHeight).fill("#E8F0FE");
+          doc.fillColor("#000000");
+
+          // left-align the semester heading at the left margin
           doc
             .fontSize(14)
             .font("Helvetica-Bold")
-            .text(`Semester ${sem.semester}`);
+            .text(`Semester ${sem.semester}`, 55, doc.y + 4, { align: "left" });
           doc
             .fontSize(10)
             .font("Helvetica")
-            .text(`SGPA: ${sem.sgpa || "N/A"}  |  CGPA: ${sem.cgpa || "N/A"}`);
-          doc.moveDown(0.5);
+            .text(
+              `SGPA: ${sem.sgpa || "N/A"}  |  CGPA: ${sem.cgpa || "N/A"}`,
+              55,
+              doc.y + 18,
+              {
+                align: "left",
+              },
+            );
+          doc.moveDown(2);
+          semsOnPage++;
 
           // Table structure
           const tableTop = doc.y;
           const colWidths = {
-            code: 60,
-            name: 210,
-            grade: 50,
-            credit: 50,
-            status: 70,
-            points: 50,
+            code: 55,
+            name: 195,
+            grade: 45,
+            credit: 45,
+            status: 65,
+            points: 45,
           };
 
           const colX = {
             code: 50,
             name: 50 + colWidths.code + 5,
-            grade: 50 + colWidths.code + colWidths.name + 10,
-            credit: 50 + colWidths.code + colWidths.name + colWidths.grade + 15,
+            grade: 50 + colWidths.code + 5 + colWidths.name + 5,
+            credit:
+              50 +
+              colWidths.code +
+              5 +
+              colWidths.name +
+              5 +
+              colWidths.grade +
+              5,
             status:
               50 +
               colWidths.code +
+              5 +
               colWidths.name +
+              5 +
               colWidths.grade +
+              5 +
               colWidths.credit +
-              20,
+              5,
             points:
               50 +
               colWidths.code +
+              5 +
               colWidths.name +
+              5 +
               colWidths.grade +
+              5 +
               colWidths.credit +
+              5 +
               colWidths.status +
-              25,
+              5,
           };
 
           // Draw header background
@@ -181,18 +218,20 @@ const generateResultPDF = (resultData) => {
                 doc.rect(50, rowY - 2, 495, 14).fill("#F5F5F5");
               }
 
-              doc.fillColor("#000000");
-
-              // Determine status
+              // Determine status and failure for coloring
               const grade = String(sub.grade || "").toUpperCase();
               let status = "Passed";
+              let isFailed = false;
               if (grade === "F" || grade === "FAIL") {
                 status = "Failed";
+                isFailed = true;
               } else if (grade === "COMPLETED") {
                 status = "Completed";
               } else if (grade === "S") {
                 status = "Passed";
               }
+
+              doc.fillColor(isFailed ? "red" : "#000000");
 
               // Draw row text (normalize numeric placeholders)
               const norm = (v) => {
@@ -206,6 +245,7 @@ const generateResultPDF = (resultData) => {
               });
               doc.text(sub.subjectName || "", colX.name, rowY, {
                 width: colWidths.name,
+                ellipsis: true,
               });
               doc.text(sub.grade || "", colX.grade, rowY, {
                 width: colWidths.grade,
