@@ -124,7 +124,7 @@ const server = app.listen(PORT, () => {
 ╚════════════════════════════════════════╝
   `);
 });
-
+console.log(process.env.MONGODB_URI);
 server.on("error", (err) => {
   if (err && err.code === "EADDRINUSE") {
     console.error(

@@ -4,10 +4,6 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 RUN apt-get update && apt-get install -y \
     chromium \
-    chromium-sandbox \
-    wget \
-    gnupg \
-    ca-certificates \
     fonts-liberation \
     libasound2 \
     libatk-bridge2.0-0 \
@@ -30,7 +26,6 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm ci --omit=dev
 
 COPY . .

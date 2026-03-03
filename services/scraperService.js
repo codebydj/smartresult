@@ -13,15 +13,12 @@ async function getResult(pin) {
   try {
     const launchOptions = {
       headless: "new",
-      executablePath: "/usr/bin/chromium",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
         "--window-size=1920,1080",
-        "--single-process",
-        "--no-zygote",
       ],
       ignoreHTTPSErrors: true,
     };
