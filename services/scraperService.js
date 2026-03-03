@@ -12,7 +12,8 @@ async function getResult(pin) {
   let browser;
   try {
     const launchOptions = {
-      headless: true,
+      headless: "new",
+      executablePath: "/usr/bin/chromium",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
