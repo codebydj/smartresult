@@ -3,7 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
-const mongoose = require("mongoose"); // ✅ Added
+const mongoose = require("mongoose");
+const { execSync } = require("child_process");
 
 const errorHandler = require("./middleware/errorHandler");
 const apiRoutes = require("./routes/v1");
@@ -55,7 +56,7 @@ const limiter = rateLimit({
 app.use("/api/", limiter);
 
 // ============================================
-// DATABASE CONNECTION (UPDATED)
+// DATABASE CONNECTION
 // ============================================
 if (!process.env.MONGODB_URI) {
   console.warn("⚠ MONGODB_URI not set; running without database persistence");
@@ -93,9 +94,27 @@ app.get("/result", async (req, res, next) => {
   }
 });
 
-// Health check endpoint
+// ============================================
+// HEALTH CHECK
+// ============================================
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// ============================================
+// DEBUG - CHROMIUM PATH FINDER
+// ============================================
+app.get("/debug-chromium", (req, res) => {
+  try {
+    const which1 = execSync('which chromium 2>/dev/null || echo "not found"').toString().trim();
+    const which2 = execSync('which chromium-browser 2>/dev/null || echo "not found"').toString().trim();
+    const find = execSync('find /usr -name "chrom*" -type f 2>/dev/null || echo "nothing"').toString().trim();
+    const env = process.env.PUPPETEER_EXECUTABLE_PATH || "not set";
+
+    res.json({ which1, which2, find, env });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
 });
 
 // ============================================
@@ -124,7 +143,7 @@ const server = app.listen(PORT, () => {
 ╚════════════════════════════════════════╝
   `);
 });
-console.log(process.env.MONGODB_URI);
+
 server.on("error", (err) => {
   if (err && err.code === "EADDRINUSE") {
     console.error(
@@ -136,7 +155,9 @@ server.on("error", (err) => {
   process.exit(1);
 });
 
-// Graceful Shutdown
+// ============================================
+// GRACEFUL SHUTDOWN
+// ============================================
 const shutdown = () => {
   console.log("SIGTERM/SIGINT received: closing HTTP server");
   server.close(() => {
