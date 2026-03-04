@@ -16,13 +16,25 @@ router.post("/result", validatePin, resultController.getResult);
 // Test endpoint with sample data
 router.get("/test/result", resultController.getTestResult);
 
-// Get result by PIN
-router.get("/result/:pin", resultController.getResultByPin);
-
-// Get public stats
+// ✅ STATIC routes MUST come before /:pin dynamic routes
 router.get("/result/stats/public", resultController.getPublicStats);
 
-// Download result as PDF
+// ✅ Live stats (online users + total searches)
+router.get("/result/stats/live", async (req, res) => {
+  try {
+    const Result = require("../models/Result");
+    const count = await Result.countDocuments();
+    // onlineUsers is tracked in server.js via socket.io
+    // We pass it via app locals
+    const onlineUsers = req.app.get("onlineUsers") || 0;
+    res.json({ onlineUsers, totalSearches: count });
+  } catch {
+    res.json({ onlineUsers: 0, totalSearches: 0 });
+  }
+});
+
+// ✅ Dynamic :pin routes AFTER static routes
 router.get("/result/:pin/download-pdf", resultController.downloadResultPDF);
+router.get("/result/:pin", resultController.getResultByPin);
 
 module.exports = router;
