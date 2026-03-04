@@ -13,16 +13,20 @@ async function getResult(pin) {
   try {
     const launchOptions = {
       headless: "new",
+      executablePath:
+        process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
         "--window-size=1920,1080",
       ],
       ignoreHTTPSErrors: true,
     };
-
     browser = await Promise.race([
       puppeteer.launch(launchOptions),
       new Promise((_, reject) =>

@@ -1,8 +1,10 @@
 services:
   - type: web
     name: smartresult
-    env: docker
+    env: node
     plan: free
+    buildCommand: apt-get install -y chromium && npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,3 +16,7 @@ services:
         value: admin
       - key: ADMIN_PASSWORD
         sync: false
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: true
