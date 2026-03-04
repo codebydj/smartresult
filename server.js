@@ -147,6 +147,20 @@ server.on("error", (err) => {
 });
 
 // ============================================
+// KEEP ALIVE (prevents Render free tier sleep)
+// ============================================
+const https = require('https');
+const RENDER_URL = 'https://smartresult-backend.onrender.com/health';
+
+setInterval(() => {
+  https.get(RENDER_URL, (res) => {
+    console.log(`Keep-alive ping: ${res.statusCode}`);
+  }).on('error', (err) => {
+    console.log('Keep-alive error:', err.message);
+  });
+}, 10 * 60 * 1000); // every 10 minutes
+
+// ============================================
 // GRACEFUL SHUTDOWN
 // ============================================
 const shutdown = () => {
