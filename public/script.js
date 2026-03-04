@@ -559,11 +559,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return alertError("Invalid PIN", "PIN looks invalid");
     busy(true);
     try {
-      const res = await fetch("/api/v1/result", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: up }),
-      });
+      const res = await fetch(
+        "https://smartresult-backend.onrender.com/api/v1/result",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pin: up }),
+        },
+      );
       const json = await res.json();
       if (!res.ok || json.success === false)
         return alertError(

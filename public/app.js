@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // If hosting everything together (Docker/Local), leave it as an empty string ""
   // Auto-detect: If running on localhost, use local backend. If on GitHub Pages, use Render backend.
   // Always use same-origin API (works for local + Render)
-const API_BASE_URL = "";
+  const API_BASE_URL = "";
 
   // Store chart instances to destroy them before re-rendering
   let chartInstances = {
@@ -59,8 +59,8 @@ const API_BASE_URL = "";
 
       try {
         const res = await fetch(
-  `/api/v1/result?pin=${encodeURIComponent(pin)}`
-);
+          `https://smartresult-backend.onrender.com/api/v1/result?pin=${encodeURIComponent(pin)}`,
+        );
         const data = await res.json();
 
         if (data.error) {
@@ -337,7 +337,7 @@ const API_BASE_URL = "";
 
   async function loadFooterStats() {
     try {
-      const res = await fetch(`/api/v1/result/stats/public`);
+      const res = await fetch(`https://smartresult-backend.onrender.com/api/v1/result/stats/public`);
       if (res.ok) {
         const data = await res.json();
         const footer = document.createElement("footer");

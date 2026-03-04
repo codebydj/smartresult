@@ -4,7 +4,6 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
-const { execSync } = require("child_process");
 
 const errorHandler = require("./middleware/errorHandler");
 const apiRoutes = require("./routes/v1");
@@ -36,13 +35,21 @@ app.use(
           "'self'",
           "https://cdnjs.cloudflare.com",
           "https://www.student.apamaravathi.in",
+          "https://smartresult-backend.onrender.com",
         ],
       },
     },
   }),
 );
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5500',
+    /\.vercel\.app$/   // allows ANY vercel subdomain
+  ],
+  credentials: true
+}));
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -99,22 +106,6 @@ app.get("/result", async (req, res, next) => {
 // ============================================
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
-});
-
-// ============================================
-// DEBUG - CHROMIUM PATH FINDER
-// ============================================
-app.get("/debug-chromium", (req, res) => {
-  try {
-    const which1 = execSync('which chromium 2>/dev/null || echo "not found"').toString().trim();
-    const which2 = execSync('which chromium-browser 2>/dev/null || echo "not found"').toString().trim();
-    const find = execSync('find /usr -name "chrom*" -type f 2>/dev/null || echo "nothing"').toString().trim();
-    const env = process.env.PUPPETEER_EXECUTABLE_PATH || "not set";
-
-    res.json({ which1, which2, find, env });
-  } catch (e) {
-    res.json({ error: e.message });
-  }
 });
 
 // ============================================
