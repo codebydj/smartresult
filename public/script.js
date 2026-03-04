@@ -22,6 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function busy(state) {
     const overlay = document.getElementById("loadingOverlay");
     if (overlay) overlay.style.display = state ? "flex" : "none";
+    // ✅ loading animation
+    if (state && window.startLoadingAnimation) window.startLoadingAnimation();
+    if (!state && window.stopLoadingAnimation) window.stopLoadingAnimation();
     if (submitBtn) {
       submitBtn.disabled = state;
       submitBtn.textContent = state ? "Searching..." : "Search";

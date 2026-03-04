@@ -172,16 +172,16 @@
       }
       #loadingProgressBar {
         width: 220px;
-        height: 4px;
+        height: 14px;
         background: #e2e8f0;
-        border-radius: 4px;
+        border-radius: 14px;
         margin: 12px auto 0;
         overflow: hidden;
       }
       #loadingProgressFill {
         height: 100%;
-        background: linear-gradient(90deg, #2563eb, #06b6d4);
-        border-radius: 4px;
+        background: linear-gradient(90deg, #059669, #34d399);
+        border-radius: 14px;
         width: 0%;
         transition: width 0.5s ease;
       }
@@ -537,7 +537,7 @@
               <span class="step-num">1</span>
               <span
                 >Enter your <strong>Student PIN</strong> in the search box above
-                (e.g. <code>248h5a0513</code>)</span
+                (e.g. <code>248h5a05**</code>)</span
               >
             </div>
             <div class="step-item">
@@ -602,7 +602,7 @@
               <span class="step-num" style="background: #ea580c">3</span>
               <span
                 ><strong>Check your PIN</strong> — make sure it's correct (e.g.
-                <code>248h5a0513</code>)</span
+                <code>248h5a05**</code>)</span
               >
             </div>
             <div class="step-item">
@@ -653,7 +653,7 @@
     <!-- ── Live Stats Bar ── -->
     <div
       style="
-        background:white;
+        background: white;
         color: #212020;
         padding: 16px 20px;
         margin-top: 2rem;
@@ -693,9 +693,6 @@
         <p class="mb-1">
           <strong>SmartResultMVR</strong> © 2026 - Academic Performance Portal
         </p>
-        <small class="text-muted"
-          >Track, analyze, and improve your academic performance</small
-        >
         <div class="mt-3">
           <a
             href="https://github.com/codebydj"
@@ -744,7 +741,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- App script -->
-    <script src="/script.js"></script>
+    <script src="script.js"></script>
 
     <script>
       // ── Banner dismiss ──
@@ -788,7 +785,7 @@
         },
         {
           msg: "📡 Fetching your result...",
-          sub: "Reaching the university portal",
+          sub: "Reaching the college portal",
           progress: 30,
         },
         {
@@ -819,23 +816,64 @@
         const tip = document.getElementById("loadingTip");
 
         tip.style.display = "none";
+
+        // Remove CSS transition — we control it manually
+        fill.style.transition = "none";
         fill.style.width = "0%";
+
+        let currentWidth = 0;
+        let rafId = null;
+
+        function animateTo(targetWidth) {
+          // Cancel any previous animation
+          if (rafId) cancelAnimationFrame(rafId);
+
+          function step() {
+            // Only move FORWARD, never backward
+            if (currentWidth < targetWidth) {
+              currentWidth = Math.min(currentWidth + 0.5, targetWidth);
+              fill.style.width = currentWidth + "%";
+              rafId = requestAnimationFrame(step);
+            } else {
+              rafId = null;
+            }
+          }
+          rafId = requestAnimationFrame(step);
+        }
 
         function showStep() {
           if (i >= loadingMessages.length) return;
           const s = loadingMessages[i];
           msgEl.textContent = s.msg;
           subEl.textContent = s.sub;
-          fill.style.width = s.progress + "%";
+          animateTo(s.progress); // ✅ always moves forward only
           i++;
         }
+
         showStep();
         loadingInterval = setInterval(showStep, 4000);
-
-        // Show tip after 25 seconds
         tipTimeout = setTimeout(() => {
           tip.style.display = "block";
         }, 25000);
+      };
+
+      window.stopLoadingAnimation = function () {
+        clearInterval(loadingInterval);
+        clearTimeout(tipTimeout);
+        const fill = document.getElementById("loadingProgressFill");
+        const tip = document.getElementById("loadingTip");
+        // animate to 100% on finish
+        let currentWidth = parseFloat(fill.style.width) || 0;
+        let rafId = null;
+        function step() {
+          if (currentWidth < 100) {
+            currentWidth = Math.min(currentWidth + 1, 100);
+            fill.style.width = currentWidth + "%";
+            rafId = requestAnimationFrame(step);
+          }
+        }
+        requestAnimationFrame(step);
+        tip.style.display = "none";
       };
 
       window.stopLoadingAnimation = function () {
