@@ -585,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
       populateSemesterFilter();
       if (downloadPdfBtn) {
         downloadPdfBtn.onclick = () => {
-          window.location.href = `/api/v1/result/${data.pin}/download-pdf`;
+          window.open(`https://smartresult-backend.onrender.com/api/v1/result/${data.pin}/download-pdf`, '_blank');
         };
       }
       saveHistory(data.pin, data.studentName || data.name || "");
