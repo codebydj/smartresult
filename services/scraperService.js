@@ -11,10 +11,22 @@ const puppeteer = require("puppeteer-core");
 async function getResult(pin) {
   let browser;
   try {
+    const chromiumPath =
+      process.env.PUPPETEER_EXECUTABLE_PATH ||
+      (() => {
+        const { execSync } = require("child_process");
+        try {
+          return execSync("which chromium").toString().trim();
+        } catch {}
+        try {
+          return execSync("which chromium-browser").toString().trim();
+        } catch {}
+        return "/usr/bin/chromium";
+      })();
+
     const launchOptions = {
       headless: "new",
-      executablePath:
-        process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium",
+      executablePath: chromiumPath,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
