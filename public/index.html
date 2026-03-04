@@ -906,6 +906,18 @@
         console.log("Socket error:", err.message);
       });
 
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          socket.disconnect(); // tab hidden → disconnect
+        } else {
+          socket.connect(); // tab visible → reconnect
+        }
+      });
+
+      window.addEventListener("beforeunload", () => {
+        socket.disconnect(); // tab closed → disconnect
+      });
+
       // Fetch total searches on page load
       async function loadLiveStats() {
         try {
