@@ -1,16 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("resultForm");
-  const submitBtn = document.getElementById("submitBtn");
+  const form = document.getElementById("searchForm"); // ✅ fixed: was "resultForm"
+  const submitBtn = document.getElementById("searchBtn"); // ✅ fixed: was "submitBtn"
   const resultDiv = document.getElementById("result");
   const resultContainer = document.getElementById("resultContainer");
   const loadingOverlay = document.getElementById("loadingOverlay");
-
-  // CONFIGURATION: API BASE URL
-  // If hosting on GitHub Pages, set this to your deployed backend URL (e.g., "https://your-app.onrender.com")
-  // If hosting everything together (Docker/Local), leave it as an empty string ""
-  // Auto-detect: If running on localhost, use local backend. If on GitHub Pages, use Render backend.
-  // Always use same-origin API (works for local + Render)
-  const API_BASE_URL = "";
 
   // Store chart instances to destroy them before re-rendering
   let chartInstances = {
@@ -53,18 +46,19 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // show loading overlay
+      // ✅ Show loading overlay + start animation
       loadingOverlay.style.display = "flex";
+      if (window.startLoadingAnimation) window.startLoadingAnimation();
       submitBtn.disabled = true;
 
       try {
         const res = await fetch(
-          `https://smartresult-backend.onrender.com/api/v1/result?pin=${encodeURIComponent(pin)}`,
+          `https://smartresult-backend.onrender.com/api/v1/result?pin=${encodeURIComponent(pin)}`
         );
         const data = await res.json();
 
-        if (data.error) {
-          showAlert(data.error, "danger");
+        if (data.error || !data.success) {
+          showAlert(data.error || data.message || "Result not found.", "danger");
           resultContainer.style.display = "none";
         } else {
           resultContainer.style.display = "block";
@@ -76,8 +70,9 @@ document.addEventListener("DOMContentLoaded", function () {
         showAlert("Network error. Please try again.", "danger");
         resultContainer.style.display = "none";
       } finally {
-        // hide loading overlay
+        // ✅ Hide loading overlay + stop animation
         loadingOverlay.style.display = "none";
+        if (window.stopLoadingAnimation) window.stopLoadingAnimation();
         submitBtn.disabled = false;
       }
     });
@@ -91,8 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     resultDiv.prepend(alertDiv);
-
-    // Auto-dismiss after 5 seconds
     setTimeout(() => alertDiv.remove(), 5000);
   }
 
@@ -117,14 +110,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
           <!-- Action Buttons -->
           <div class="mb-4">
-            <a href="/api/v1/result/${resultData.pin}/download-pdf" class="btn btn-outline-primary" target="_blank">
+            <a href="https://smartresult-backend.onrender.com/api/v1/result/${resultData.pin}/download-pdf" class="btn btn-outline-primary" target="_blank">
               📥 Download PDF
             </a>
           </div>
 
           <!-- Performance Charts Section -->
           <div class="row mb-4">
-            <!-- SGPA Performance Chart -->
             <div class="col-12 mb-4">
               <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
@@ -139,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
     `;
 
-    // Render detailed semesters if available
     if (Array.isArray(resultData.semesters) && resultData.semesters.length) {
       html += `<div class="accordion mb-4" id="semesterAccordion">`;
 
@@ -188,18 +179,10 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
           });
 
-          html += `
-                </tbody>
-              </table>
-            </div>
-          `;
+          html += `</tbody></table></div>`;
         }
 
-        html += `
-              </div>
-            </div>
-          </div>
-        `;
+        html += `</div></div></div>`;
       });
 
       html += `</div>`;
@@ -208,12 +191,10 @@ document.addEventListener("DOMContentLoaded", function () {
     html += `</div></div>`;
     resultDiv.innerHTML = html;
 
-    // Initialize Charts
     await ensureChartJS();
     renderCharts(resultData);
   }
 
-  // Helper to load Chart.js dynamically if not present
   function ensureChartJS() {
     return new Promise((resolve, reject) => {
       if (typeof Chart !== "undefined") return resolve();
@@ -226,27 +207,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderCharts(data) {
-    // 1. Prepare Data
-    // Helper to parse Semester (Handles "1", "I", "Sem 1", etc.)
     const parseSem = (sem) => {
-      const s = String(sem)
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "");
+      const s = String(sem).toUpperCase().replace(/[^A-Z0-9]/g, "");
       if (!isNaN(parseInt(s))) return parseInt(s);
-      const romans = {
-        I: 1,
-        II: 2,
-        III: 3,
-        IV: 4,
-        V: 5,
-        VI: 6,
-        VII: 7,
-        VIII: 8,
-      };
+      const romans = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8 };
       return romans[s] || 0;
     };
 
-    // Sort semesters numerically to ensure correct trend line
     const sortedSemesters = (data.semesters || []).slice().sort((a, b) => {
       return parseSem(a.semester) - parseSem(b.semester);
     });
@@ -258,8 +225,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const labels = sortedSemesters.map((s) => `Sem ${s.semester}`);
-
-    // Robust parsing for SGPA/CGPA to prevent empty charts
     const parseGrade = (val) => {
       if (!val) return 0;
       const num = parseFloat(String(val).replace(/[^0-9.]/g, ""));
@@ -267,10 +232,8 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     const sgpaData = sortedSemesters.map((s) => parseGrade(s.sgpa));
 
-    // 2. Destroy old instances
     if (chartInstances.sgpa) chartInstances.sgpa.destroy();
 
-    // 3. Render SGPA Chart
     const ctxSGPA = document.getElementById("sgpaChart").getContext("2d");
     chartInstances.sgpa = new Chart(ctxSGPA, {
       type: "bar",
@@ -280,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function () {
           {
             label: "SGPA",
             data: sgpaData,
-            borderColor: "#4f46e5", // Indigo
+            borderColor: "#4f46e5",
             backgroundColor: "rgba(79, 70, 229, 0.6)",
             borderWidth: 1,
           },
@@ -307,26 +270,20 @@ document.addEventListener("DOMContentLoaded", function () {
             max: 10,
             grid: { borderDash: [2, 4], color: "#e5e7eb" },
           },
-          x: {
-            grid: { display: false },
-          },
+          x: { grid: { display: false } },
         },
       },
     });
 
-    // 5. Performance Insight
     const insightDiv = document.getElementById("sgpaInsight");
     if (sgpaData.length >= 2) {
       const current = sgpaData[sgpaData.length - 1];
       const prev = sgpaData[sgpaData.length - 2];
       const diff = (current - prev).toFixed(2);
-
       if (diff > 0) {
         insightDiv.innerHTML = `<span class="text-success">📈 Your performance improved by ${diff} points!</span>`;
       } else if (diff < 0) {
-        insightDiv.innerHTML = `<span class="text-danger">📉 Your SGPA dropped by ${Math.abs(
-          diff,
-        )} points. Review subject performance.</span>`;
+        insightDiv.innerHTML = `<span class="text-danger">📉 Your SGPA dropped by ${Math.abs(diff)} points.</span>`;
       } else {
         insightDiv.innerHTML = `<span class="text-primary">Your performance is consistent.</span>`;
       }
@@ -337,7 +294,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function loadFooterStats() {
     try {
-      const res = await fetch(`https://smartresult-backend.onrender.com/api/v1/result/stats/public`);
+      const res = await fetch(
+        `https://smartresult-backend.onrender.com/api/v1/result/stats/public`
+      );
       if (res.ok) {
         const data = await res.json();
         const footer = document.createElement("footer");
