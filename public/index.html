@@ -652,24 +652,23 @@
 
     <!-- ── Live Stats Bar ── -->
     <div
-      id="liveStatsBar"
       style="
         background:white;
-        width: fit-content;
-        color: #222020;
-        padding: 14px 20px;
-        margin-top: 3rem;
+        color: #212020;
+        padding: 16px 20px;
+        margin-top: 2rem;
         border-radius: 14px;
         display: flex;
         justify-content: center;
         gap: 40px;
         flex-wrap: wrap;
         align-items: center;
-        margin: auto;
       ">
       <div style="text-align: center">
-        <div style="font-size: 1.6rem; font-weight: 800" id="onlineCount">
-          –
+        <div
+          id="onlineCount"
+          style="font-size: 1.8rem; font-weight: 800; color: #34d399">
+          0
         </div>
         <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px">
           👥 Online Now
@@ -677,8 +676,10 @@
       </div>
       <div style="width: 1px; background: #334155; height: 40px"></div>
       <div style="text-align: center">
-        <div style="font-size: 1.6rem; font-weight: 800" id="totalSearchCount">
-          –
+        <div
+          id="totalSearchCount"
+          style="font-size: 1.8rem; font-weight: 800; color: #60a5fa">
+          0
         </div>
         <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px">
           ✅ Total Searches
@@ -848,25 +849,45 @@
     <!-- Socket.io client -->
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4/dist/socket.io.min.js"></script>
     <script>
-      const socket = io("https://smartresult-backend.onrender.com");
-
-      // Live stats on connect
-      socket.on("stats-update", (data) => {
-        document.getElementById("onlineCount").textContent =
-          data.onlineUsers || 0;
+      // Connect to backend
+      const socket = io("https://smartresult-backend.onrender.com", {
+        transports: ["websocket", "polling"],
       });
 
-      // Total searches on load
-      fetch("https://smartresult-backend.onrender.com/api/v1/stats/live")
-        .then((r) => r.json())
-        .then((data) => {
-          document.getElementById("totalSearchCount").textContent = (
-            data.totalSearches || 0
-          ).toLocaleString();
-          document.getElementById("onlineCount").textContent =
-            data.onlineUsers || 0;
-        })
-        .catch(() => {});
+      // Update online count in real-time
+      socket.on("stats-update", (data) => {
+        const el = document.getElementById("onlineCount");
+        if (el) el.textContent = data.onlineUsers || 0;
+      });
+
+      socket.on("connect", () => {
+        console.log("✅ Socket connected");
+      });
+
+      socket.on("connect_error", (err) => {
+        console.log("Socket error:", err.message);
+      });
+
+      // Fetch total searches on page load
+      async function loadLiveStats() {
+        try {
+          const res = await fetch(
+            "https://smartresult-backend.onrender.com/api/v1/stats/live",
+          );
+          const data = await res.json();
+          const onlineEl = document.getElementById("onlineCount");
+          const totalEl = document.getElementById("totalSearchCount");
+          if (onlineEl) onlineEl.textContent = data.onlineUsers || 0;
+          if (totalEl)
+            totalEl.textContent = (data.totalSearches || 0).toLocaleString();
+        } catch (err) {
+          console.log("Stats fetch failed:", err.message);
+        }
+      }
+
+      loadLiveStats();
+      // Refresh total searches every 30 seconds
+      setInterval(loadLiveStats, 30000);
     </script>
   </body>
 </html>

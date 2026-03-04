@@ -10,9 +10,12 @@ const { Server } = require("socket.io");
 const errorHandler = require("./middleware/errorHandler");
 const apiRoutes = require("./routes/v1");
 const { getResult } = require("./services/scraperService");
-const Result = require("./models/Result"); // ✅ import Result model
+const Result = require("./models/Result");
 
 const app = express();
+
+// ✅ Declare BEFORE any route uses it
+let onlineUsers = 0;
 
 // ============================================
 // MIDDLEWARE
@@ -39,7 +42,7 @@ app.use(
           "https://cdnjs.cloudflare.com",
           "https://www.student.apamaravathi.in",
           "https://smartresult-backend.onrender.com",
-          "wss://smartresult-backend.onrender.com", // ✅ WebSocket
+          "wss://smartresult-backend.onrender.com",
         ],
       },
     },
@@ -51,7 +54,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5500",
-      /\.vercel\.app$/, // allows ANY vercel subdomain
+      /\.vercel\.app$/,
     ],
     credentials: true,
   })
@@ -60,7 +63,6 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-// Rate Limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
@@ -75,12 +77,8 @@ if (!process.env.MONGODB_URI) {
   console.warn("⚠ MONGODB_URI not set; running without database persistence");
 } else {
   mongoose
-    .connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-    })
-    .then(() => {
-      console.log("✓ MongoDB Atlas Connected Successfully");
-    })
+    .connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
+    .then(() => console.log("✓ MongoDB Atlas Connected Successfully"))
     .catch((err) => {
       console.error("✗ MongoDB Connection Error:", err.message);
       process.exit(1);
@@ -88,14 +86,9 @@ if (!process.env.MONGODB_URI) {
 }
 
 // ============================================
-// API ROUTES
+// LIVE STATS ROUTE ← different path to avoid v1 router conflict
 // ============================================
-app.use("/api/v1", apiRoutes);
-
-// ============================================
-// LIVE STATS ROUTE
-// ============================================
-app.get("/api/v1/stats/live", async (req, res) => {
+app.get("/stats/live", async (req, res) => {
   try {
     const count = await Result.countDocuments();
     res.json({ onlineUsers, totalSearches: count });
@@ -103,6 +96,11 @@ app.get("/api/v1/stats/live", async (req, res) => {
     res.json({ onlineUsers, totalSearches: 0 });
   }
 });
+
+// ============================================
+// API ROUTES
+// ============================================
+app.use("/api/v1", apiRoutes);
 
 // ============================================
 // LEGACY ROUTES
@@ -136,7 +134,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ============================================
-// SERVER START  ← server is created HERE first
+// SERVER START
 // ============================================
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -155,9 +153,7 @@ const server = app.listen(PORT, () => {
 
 server.on("error", (err) => {
   if (err && err.code === "EADDRINUSE") {
-    console.error(
-      `✗ Port ${PORT} is already in use. Please free the port or set PORT in .env.`
-    );
+    console.error(`✗ Port ${PORT} is already in use.`);
     process.exit(1);
   }
   console.error("✗ Server error:", err);
@@ -165,7 +161,7 @@ server.on("error", (err) => {
 });
 
 // ============================================
-// SOCKET.IO  ← MUST be after server is created
+// SOCKET.IO ← after server is created
 // ============================================
 const io = new Server(server, {
   cors: {
@@ -177,8 +173,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
-let onlineUsers = 0;
 
 io.on("connection", (socket) => {
   onlineUsers++;
@@ -193,18 +187,15 @@ io.on("connection", (socket) => {
 });
 
 // ============================================
-// KEEP ALIVE (prevents Render free tier sleep)
+// KEEP ALIVE
 // ============================================
 const RENDER_URL = "https://smartresult-backend.onrender.com/health";
-
 setInterval(() => {
-  https
-    .get(RENDER_URL, (res) => {
-      console.log(`Keep-alive ping: ${res.statusCode}`);
-    })
-    .on("error", (err) => {
-      console.log("Keep-alive error:", err.message);
-    });
+  https.get(RENDER_URL, (res) => {
+    console.log(`Keep-alive ping: ${res.statusCode}`);
+  }).on("error", (err) => {
+    console.log("Keep-alive error:", err.message);
+  });
 }, 10 * 60 * 1000);
 
 // ============================================
@@ -219,11 +210,7 @@ const shutdown = () => {
       process.exit(0);
     });
   });
-
-  setTimeout(() => {
-    console.error("Forcing shutdown");
-    process.exit(1);
-  }, 10000);
+  setTimeout(() => { process.exit(1); }, 10000);
 };
 
 process.on("SIGTERM", shutdown);
