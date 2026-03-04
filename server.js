@@ -4,10 +4,13 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
+const https = require("https");
+const { Server } = require("socket.io");
 
 const errorHandler = require("./middleware/errorHandler");
 const apiRoutes = require("./routes/v1");
 const { getResult } = require("./services/scraperService");
+const Result = require("./models/Result"); // ✅ import Result model
 
 const app = express();
 
@@ -36,20 +39,23 @@ app.use(
           "https://cdnjs.cloudflare.com",
           "https://www.student.apamaravathi.in",
           "https://smartresult-backend.onrender.com",
+          "wss://smartresult-backend.onrender.com", // ✅ WebSocket
         ],
       },
     },
-  }),
+  })
 );
 
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5500',
-    /\.vercel\.app$/   // allows ANY vercel subdomain
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5500",
+      /\.vercel\.app$/, // allows ANY vercel subdomain
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -87,6 +93,18 @@ if (!process.env.MONGODB_URI) {
 app.use("/api/v1", apiRoutes);
 
 // ============================================
+// LIVE STATS ROUTE
+// ============================================
+app.get("/api/v1/stats/live", async (req, res) => {
+  try {
+    const count = await Result.countDocuments();
+    res.json({ onlineUsers, totalSearches: count });
+  } catch {
+    res.json({ onlineUsers, totalSearches: 0 });
+  }
+});
+
+// ============================================
 // LEGACY ROUTES
 // ============================================
 app.get("/result", async (req, res, next) => {
@@ -118,7 +136,7 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ============================================
-// SERVER START
+// SERVER START  ← server is created HERE first
 // ============================================
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -138,7 +156,7 @@ const server = app.listen(PORT, () => {
 server.on("error", (err) => {
   if (err && err.code === "EADDRINUSE") {
     console.error(
-      `✗ Port ${PORT} is already in use. Please free the port or set PORT in .env.`,
+      `✗ Port ${PORT} is already in use. Please free the port or set PORT in .env.`
     );
     process.exit(1);
   }
@@ -147,18 +165,47 @@ server.on("error", (err) => {
 });
 
 // ============================================
+// SOCKET.IO  ← MUST be after server is created
+// ============================================
+const io = new Server(server, {
+  cors: {
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5500",
+      /\.vercel\.app$/,
+    ],
+    methods: ["GET", "POST"],
+  },
+});
+
+let onlineUsers = 0;
+
+io.on("connection", (socket) => {
+  onlineUsers++;
+  console.log(`👥 User connected. Online: ${onlineUsers}`);
+  io.emit("stats-update", { onlineUsers });
+
+  socket.on("disconnect", () => {
+    onlineUsers--;
+    console.log(`👋 User left. Online: ${onlineUsers}`);
+    io.emit("stats-update", { onlineUsers });
+  });
+});
+
+// ============================================
 // KEEP ALIVE (prevents Render free tier sleep)
 // ============================================
-const https = require('https');
-const RENDER_URL = 'https://smartresult-backend.onrender.com/health';
+const RENDER_URL = "https://smartresult-backend.onrender.com/health";
 
 setInterval(() => {
-  https.get(RENDER_URL, (res) => {
-    console.log(`Keep-alive ping: ${res.statusCode}`);
-  }).on('error', (err) => {
-    console.log('Keep-alive error:', err.message);
-  });
-}, 10 * 60 * 1000); // every 10 minutes
+  https
+    .get(RENDER_URL, (res) => {
+      console.log(`Keep-alive ping: ${res.statusCode}`);
+    })
+    .on("error", (err) => {
+      console.log("Keep-alive error:", err.message);
+    });
+}, 10 * 60 * 1000);
 
 // ============================================
 // GRACEFUL SHUTDOWN
