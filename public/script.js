@@ -255,6 +255,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div class="d-flex align-items-center gap-2">
           <span class="accordion-meta text-muted">SGPA: ${sem.sgpa || "N/A"}</span>
+          <button class="share-sem-btn btn btn-sm" 
+            style="background:linear-gradient(90deg,#6366f1,#06b6d4);color:white;border:none;border-radius:20px;padding:3px 10px;font-size:0.72rem;font-weight:600;"
+            data-idx="${idx}">
+            📤 Share
+          </button>
           <span class="accordion-arrow">&#x25BC;</span>
         </div>
       `;
@@ -313,6 +318,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         updateChartForOpenSemester();
       });
+      // Share button click
+      const shareBtn = header.querySelector(".share-sem-btn");
+      if (shareBtn) {
+        shareBtn.addEventListener("click", (e) => {
+          e.stopPropagation(); // don't open accordion
+          const semIdx = parseInt(shareBtn.getAttribute("data-idx"));
+          const semData = (window.lastSemesters || [])[semIdx];
+          const studentName =
+            document.querySelector(".result-card h4")?.textContent || "";
+          const cgpa =
+            document.querySelector(".result-card [style*='var(--primary)']")
+              ?.textContent || "";
+          if (semData) shareSemesterAsImage(semData, studentName, cgpa);
+        });
+      }
     });
   }
 
@@ -585,7 +605,10 @@ document.addEventListener("DOMContentLoaded", () => {
       populateSemesterFilter();
       if (downloadPdfBtn) {
         downloadPdfBtn.onclick = () => {
-          window.open(`https://smartresult-backend.onrender.com/api/v1/result/${data.pin}/download-pdf`, '_blank');
+          window.open(
+            `https://smartresult-backend.onrender.com/api/v1/result/${data.pin}/download-pdf`,
+            "_blank",
+          );
         };
       }
       saveHistory(data.pin, data.studentName || data.name || "");
@@ -626,6 +649,197 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       updatePerfText();
     });
+
+  async function shareSemesterAsImage(sem, studentName, cgpa) {
+    // Create a hidden card to screenshot
+    const card = document.createElement("div");
+    card.id = "shareCard";
+    card.style.cssText = `
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 400px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border-radius: 20px;
+    padding: 28px;
+    color: white;
+    font-family: Inter, sans-serif;
+    z-index: -1;
+  `;
+
+    const rank = getRank(sem.sgpa);
+    const subjects = sem.subjects || [];
+    const failCount = subjects.filter((s) => isFailed(s)).length;
+
+    const subjectRows = subjects
+      .map(
+        (s) => `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:0.78rem;">
+      <span style="color:#cbd5e1;max-width:220px;">${s.subjectName || s.subjectCode || ""}</span>
+      <span style="font-weight:700;color:${isFailed(s) ? "#f87171" : "#34d399"};">${s.grade || ""}</span>
+    </div>
+  `,
+      )
+      .join("");
+
+    card.innerHTML = `
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;">SMARTRESULTMVR</div>
+        <div style="font-size:1.1rem;font-weight:800;margin-top:2px;">${studentName || "Student"}</div>
+      </div>
+      <div style="font-size:2rem;">${rank.emoji || "🎓"}</div>
+    </div>
+
+    <!-- Semester Info -->
+    <div style="background:rgba(255,255,255,0.07);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:0.7rem;color:#94a3b8;">SEMESTER</div>
+          <div style="font-size:1.4rem;font-weight:800;">${sem.semester}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.7rem;color:#94a3b8;">SGPA</div>
+          <div style="font-size:2rem;font-weight:800;color:#60a5fa;">${sem.sgpa || "N/A"}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.7rem;color:#94a3b8;">RANK</div>
+          <div style="font-size:0.9rem;font-weight:700;color:${rank.color || "#fff"};">${rank.name}</div>
+        </div>
+      </div>
+      ${failCount > 0 ? `<div style="margin-top:8px;color:#f87171;font-size:0.78rem;font-weight:600;">⚠️ ${failCount} subject(s) failed</div>` : `<div style="margin-top:8px;color:#34d399;font-size:0.78rem;font-weight:600;">✅ All subjects passed</div>`}
+    </div>
+
+    <!-- Subjects -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;margin-bottom:8px;">SUBJECTS</div>
+      ${subjectRows}
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:0.7rem;color:#64748b;">smartresultmvr.vercel.app</div>
+    </div>
+  `;
+
+    document.body.appendChild(card);
+
+    try {
+      const canvas = await html2canvas(card, {
+        backgroundColor: null,
+        scale: 2, // high resolution
+        useCORS: true,
+      });
+
+      // Download
+      const link = document.createElement("a");
+      link.download = `SmartResult_Sem${sem.semester}_${studentName || "result"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("Share failed:", err);
+      alert("Failed to generate image. Try again.");
+    } finally {
+      document.body.removeChild(card);
+    }
+  }
+
+  // share card gneraterator
+  async function shareSemesterAsImage(sem, studentName, cgpa) {
+    // Create a hidden card to screenshot
+    const card = document.createElement("div");
+    card.id = "shareCard";
+    card.style.cssText = `
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: 400px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border-radius: 20px;
+    padding: 28px;
+    color: white;
+    font-family: Inter, sans-serif;
+    z-index: -1;
+  `;
+
+    const rank = getRank(sem.sgpa);
+    const subjects = sem.subjects || [];
+    const failCount = subjects.filter((s) => isFailed(s)).length;
+
+    const subjectRows = subjects
+      .map(
+        (s) => `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:0.78rem;">
+      <span style="color:#cbd5e1;max-width:220px;">${s.subjectName || s.subjectCode || ""}</span>
+      <span style="font-weight:700;color:${isFailed(s) ? "#f87171" : "#34d399"};">${s.grade || ""}</span>
+    </div>
+  `,
+      )
+      .join("");
+
+    card.innerHTML = `
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;">SMARTRESULTMVR</div>
+        <div style="font-size:1.1rem;font-weight:800;margin-top:2px;">${studentName || "Student"}</div>
+      </div>
+      <div style="font-size:2rem;">${rank.emoji || "🎓"}</div>
+    </div>
+
+    <!-- Semester Info -->
+    <div style="background:rgba(255,255,255,0.07);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:0.7rem;color:#94a3b8;">SEMESTER</div>
+          <div style="font-size:1.4rem;font-weight:800;">${sem.semester}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.7rem;color:#94a3b8;">SGPA</div>
+          <div style="font-size:2rem;font-weight:800;color:#60a5fa;">${sem.sgpa || "N/A"}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.7rem;color:#94a3b8;">RANK</div>
+          <div style="font-size:0.9rem;font-weight:700;color:${rank.color || "#fff"};">${rank.name}</div>
+        </div>
+      </div>
+      ${failCount > 0 ? `<div style="margin-top:8px;color:#f87171;font-size:0.78rem;font-weight:600;">⚠️ ${failCount} subject(s) failed</div>` : `<div style="margin-top:8px;color:#34d399;font-size:0.78rem;font-weight:600;">✅ All subjects passed</div>`}
+    </div>
+
+    <!-- Subjects -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;margin-bottom:8px;">SUBJECTS</div>
+      ${subjectRows}
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:0.7rem;color:#64748b;">smartresultmvr.vercel.app</div>
+    </div>
+  `;
+
+    document.body.appendChild(card);
+
+    try {
+      const canvas = await html2canvas(card, {
+        backgroundColor: null,
+        scale: 2, // high resolution
+        useCORS: true,
+      });
+
+      // Download
+      const link = document.createElement("a");
+      link.download = `SmartResult_Sem${sem.semester}_${studentName || "result"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (err) {
+      console.error("Share failed:", err);
+      alert("Failed to generate image. Try again.");
+    } finally {
+      document.body.removeChild(card);
+    }
+  }
 
   // initialize history on load
   renderHistory();

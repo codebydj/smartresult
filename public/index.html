@@ -15,177 +15,9 @@
       rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" href="/logo.png" />
-
-    <style>
-      /* ── First-time banner ── */
-      #firstTimeBanner {
-        background: linear-gradient(90deg, #0d6efd 0%, #06b6d4 100%);
-        color: #fff;
-        padding: 10px 16px;
-        font-size: 0.88rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        position: relative;
-      }
-      #firstTimeBanner .close-banner {
-        position: absolute;
-        right: 14px;
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.1rem;
-        cursor: pointer;
-        opacity: 0.8;
-        line-height: 1;
-      }
-      #firstTimeBanner .close-banner:hover {
-        opacity: 1;
-      }
-
-      /* ── Status badge ── */
-      #serverStatusBadge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.78rem;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        transition: all 0.4s;
-      }
-      #serverStatusBadge.online {
-        background: #d1fae5;
-        color: #065f46;
-      }
-      #serverStatusBadge.warming {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      #serverStatusBadge.offline {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-      }
-      #serverStatusBadge.online .status-dot {
-        background: #10b981;
-        animation: pulse-green 1.5s infinite;
-      }
-      #serverStatusBadge.warming .status-dot {
-        background: #f59e0b;
-        animation: pulse-yellow 1.5s infinite;
-      }
-      #serverStatusBadge.offline .status-dot {
-        background: #ef4444;
-      }
-      @keyframes pulse-green {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-        }
-        50% {
-          box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
-        }
-      }
-      @keyframes pulse-yellow {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
-        }
-        50% {
-          box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
-        }
-      }
-
-      /* ── How to use card ── */
-      #howToUseCard {
-        background: #f8faff;
-        border: 1.5px solid #dbeafe;
-        border-radius: 14px;
-        padding: 1.2rem 1.4rem;
-        margin-bottom: 1.2rem;
-      }
-      #howToUseCard h6 {
-        color: #1d4ed8;
-        font-weight: 700;
-        margin-bottom: 0.8rem;
-      }
-      .step-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 0.55rem;
-        font-size: 0.87rem;
-        color: #374151;
-      }
-      .step-num {
-        background: #2563eb;
-        color: #fff;
-        border-radius: 50%;
-        width: 22px;
-        height: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.72rem;
-        font-weight: 700;
-        flex-shrink: 0;
-        margin-top: 1px;
-      }
-
-      /* ── Smart loading overlay ── */
-      #loadingOverlay .loading-container {
-        text-align: center;
-      }
-      #loadingMessage {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e293b;
-        margin-top: 14px;
-        min-height: 28px;
-        transition: opacity 0.3s;
-      }
-      #loadingSubMessage {
-        font-size: 0.82rem;
-        color: #64748b;
-        margin-top: 4px;
-        min-height: 20px;
-      }
-      #loadingTip {
-        display: none;
-        margin-top: 14px;
-        background: #fef9c3;
-        border: 1px solid #fde047;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-size: 0.82rem;
-        color: #713f12;
-        max-width: 280px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      #loadingProgressBar {
-        width: 220px;
-        height: 14px;
-        background: #e2e8f0;
-        border-radius: 14px;
-        margin: 12px auto 0;
-        overflow: hidden;
-      }
-      #loadingProgressFill {
-        height: 100%;
-        background: linear-gradient(90deg, #059669, #34d399);
-        border-radius: 14px;
-        width: 0%;
-        transition: width 0.5s ease;
-      }
-    </style>
+    <link rel="stylesheet" href="style2.css" />
+    <link rel="stylesheet" href="responsive.css" />
+    <style></style>
   </head>
   <body>
     <!-- Navigation Bar -->
@@ -245,7 +77,7 @@
 
     <!-- Main Container -->
     <main class="container py-6">
-      <div class="row justify-content-center">
+      <div class="row justify-content-center" style="background-color: #eef0fb">
         <div class="col-lg-6 col-md-8">
           <!-- Hero Section -->
           <div class="text-center mb-4 hero-section">
@@ -265,7 +97,7 @@
                 id="pin"
                 name="pin"
                 class="form-control form-control-lg search-input"
-                placeholder="Enter Student ID (eg:000H0A0000)"
+                placeholder="Enter Student ID ( eg:248H5A05XX )"
                 aria-label="PIN"
                 autocomplete="off"
                 required />
@@ -273,219 +105,16 @@
                 Get Result
               </button>
             </form>
-            <span
+
+            <div
               id="lastUpdated"
-              style="color: #616161; text-shadow: #e0e0e0 1px 1px 0"
-              >Last Updated: MAR 4 2026</span
-            >
-          </div>
-
-          <div class="text-center mb-3">
-            <small class="text-muted"
-              >We keep searches private. Results are cached for 24 hours.</small
-            >
-          </div>
-
-          <!-- Gaming Rank Levels Table -->
-          <div
-            id="staticRankingTable"
-            class="mt-4 mb-5"
-            style="padding: 2rem; background: #f8f9fa; border-radius: 8px">
-            <h5 style="margin-bottom: 1rem; text-align: center; color: #333">
-              🎮 Gaming Rank Levels
-            </h5>
-            <table
               style="
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 0.9rem;
-                border-radius: 18px;
+                color: #616161;
+                text-shadow: #e0e0e0 1px 1px 0;
+                margin-top: 10px;
               ">
-              <thead>
-                <tr style="background: #007bff; color: white">
-                  <th
-                    style="
-                      padding: 10px;
-                      text-align: left;
-                      border: 1px solid #ddd;
-                    ">
-                    SGPA Range
-                  </th>
-                  <th
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    Gaming Rank
-                  </th>
-                  <th
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    Badge Style
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="background: #fff; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    9.5 – 10
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    👑 Conqueror/Heroic
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    🏆🔥
-                  </td>
-                </tr>
-                <tr style="background: #f0f0f0; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    8.5 – 9.4
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    💎 Diamond
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    💎
-                  </td>
-                </tr>
-                <tr style="background: #fff; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    7.5 – 8.4
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    🟣 Platinum
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    🟣
-                  </td>
-                </tr>
-                <tr style="background: #f0f0f0; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    6.5 – 7.4
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    🟡 Gold
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    🟡
-                  </td>
-                </tr>
-                <tr style="background: #fff; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    5.5 – 6.4
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    ⚪ Silver
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    ⚪
-                  </td>
-                </tr>
-                <tr style="background: #f0f0f0; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    4.5 – 5.4
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    🟤 Bronze
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    🟤
-                  </td>
-                </tr>
-                <tr style="background: #fff; border-bottom: 1px solid #ddd">
-                  <td style="padding: 10px; border: 1px solid #ddd">
-                    Below 4.5
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                    ">
-                    💀 noob
-                  </td>
-                  <td
-                    style="
-                      padding: 10px;
-                      text-align: center;
-                      border: 1px solid #ddd;
-                      font-size: 1.2rem;
-                    ">
-                    💀
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+              Last Updated: MAR 6 2026
+            </div>
           </div>
 
           <!-- Result Section -->
@@ -530,122 +159,275 @@
             <div id="perfText" class="mt-2"></div>
           </div>
 
-          <!-- ── How To Use Card ── -->
-          <div id="howToUseCard">
-            <h6>📋 How to use</h6>
-            <div class="step-item">
-              <span class="step-num">1</span>
-              <span
-                >Enter your <strong>Student PIN</strong> in the search box above
-                (e.g. <code>248h5a05**</code>)</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num">2</span>
-              <span
-                >Click <strong>"Get Result"</strong> and wait —
-                <em>first search takes 20–30 seconds</em></span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num">3</span>
-              <span
-                >View your
-                <strong>name, CGPA, and semester breakdown</strong> on
-                screen</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num">4</span>
-              <span
-                >Click <strong>"Download PDF"</strong> to save your result card
-                offline</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num">5</span>
-              <span
-                >🔁 Searching the <strong>same PIN again</strong> is
-                <em>instant</em> — results are cached!</span
-              >
-            </div>
-          </div>
-
-          <!-- ── Still Loading? Card ── -->
-          <div
-            id="stillLoadingCard"
-            style="
-              background: #fff7ed;
-              border: 1.5px solid #fed7aa;
-              border-radius: 14px;
-              padding: 1.2rem 1.4rem;
-              margin-bottom: 1.2rem;
-            ">
-            <h6 style="color: #c2410c; font-weight: 700; margin-bottom: 0.8rem">
-              ⏳ Still Loading? Here's what to do
-            </h6>
-            <div class="step-item">
-              <span class="step-num" style="background: #ea580c">1</span>
-              <span
-                ><strong>Don't refresh the page</strong> — refreshing will
-                restart the process from scratch</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num" style="background: #ea580c">2</span>
-              <span
-                ><strong>Wait up to 60 seconds</strong> on first use — the
-                server needs time to wake up</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num" style="background: #ea580c">3</span>
-              <span
-                ><strong>Check your PIN</strong> — make sure it's correct (e.g.
-                <code>248h5a05**</code>)</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num" style="background: #ea580c">4</span>
-              <span
-                ><strong>Check your internet</strong> — a weak connection can
-                cause timeouts</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num" style="background: #ea580c">5</span>
-              <span
-                >If it still fails,
-                <strong>wait 2 minutes and try again</strong> — the server may
-                be busy</span
-              >
-            </div>
-            <div class="step-item">
-              <span class="step-num" style="background: #ea580c">6</span>
-              <span
-                >Second search is always <strong>much faster</strong> ⚡ —
-                results get cached after first fetch</span
-              >
-            </div>
-          </div>
-
-          <!-- Info Cards -->
-          <div class="row mt-5 g-3">
-            <div class="col-md-6">
-              <div class="info-card p-4 rounded-lg text-center">
-                <span class="info-icon">🔒</span>
-                <h6 class="mt-3">Secure</h6>
-                <small class="text-muted">Your data is encrypted</small>
+          <!-- ══════════════════════════════════════
+               WHY SMARTRESULT SECTION
+          ══════════════════════════════════════ -->
+          <section class="why-section">
+            <h2 class="section-heading">Why SmartResult?</h2>
+            <div class="why-grid">
+              <div class="why-card">
+                <div class="why-icon-wrap" style="background: #eff6ff">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#2563eb"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3" />
+                    <path d="M3 9h18M9 21V9" />
+                  </svg>
+                </div>
+                <h6>Performance Analytics</h6>
+                <p>
+                  Understand your academic performance instantly with detailed
+                  charts.
+                </p>
+              </div>
+              <div class="why-card">
+                <div class="why-icon-wrap" style="background: #f0fdf4">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#16a34a"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                </div>
+                <h6>Secure Access</h6>
+                <p>
+                  Student data retrieved and encrypted — never stored
+                  permanently.
+                </p>
+              </div>
+              <div class="why-card">
+                <div class="why-icon-wrap" style="background: #fffbeb">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#d97706"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                </div>
+                <h6>Fast Results</h6>
+                <p>
+                  Cached results load instantly — second search is always
+                  lightning fast.
+                </p>
+              </div>
+              <div class="why-card">
+                <div class="why-icon-wrap" style="background: #fdf4ff">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#9333ea"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2" />
+                    <path d="M12 18h.01" />
+                  </svg>
+                </div>
+                <h6>Mobile Optimized</h6>
+                <p>
+                  Works perfectly on all devices — phone, tablet, or desktop.
+                </p>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="info-card p-4 rounded-lg text-center">
-                <span class="info-icon">📱</span>
-                <h6 class="mt-3">Mobile Friendly</h6>
-                <small class="text-muted">Works on all devices</small>
+          </section>
+
+          <!-- ══════════════════════════════════════
+               HOW IT WORKS SECTION
+          ══════════════════════════════════════ -->
+          <section class="hiw-section">
+            <h2 class="section-heading">How It Works</h2>
+            <div class="hiw-grid">
+              <div class="hiw-card">
+                <div class="hiw-header">
+                  <div class="hiw-step-num">1</div>
+                  <h6>Enter Student PIN</h6>
+                </div>
+                <ul class="hiw-list">
+                  <li>
+                    Enter your PIN in the search box above (e.g.
+                    <code>248h5a05**</code>)
+                  </li>
+                  <li>Retrieves your complete academic results</li>
+                </ul>
+              </div>
+              <div class="hiw-card">
+                <div class="hiw-header">
+                  <div
+                    class="hiw-step-num"
+                    style="
+                      background: linear-gradient(135deg, #10b981, #06b6d4);
+                    ">
+                    2
+                  </div>
+                  <h6>Fetch Academic Results</h6>
+                </div>
+                <ul class="hiw-list">
+                  <li>Click <strong>"Get Result"</strong> and wait</li>
+                  <li>Server may take time to wake up on first use</li>
+                </ul>
+              </div>
+              <div class="hiw-card">
+                <div class="hiw-header">
+                  <div
+                    class="hiw-step-num"
+                    style="
+                      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    ">
+                    3
+                  </div>
+                  <h6>View GPA + Subject Breakdown</h6>
+                </div>
+                <ul class="hiw-list">
+                  <li>See CGPA, semester SGPA, and all grades at a glance</li>
+                  <li>Double-check your PIN if results don't load</li>
+                </ul>
+              </div>
+              <div class="hiw-card">
+                <div class="hiw-header">
+                  <div
+                    class="hiw-step-num"
+                    style="
+                      background: linear-gradient(135deg, #f59e0b, #ef4444);
+                    ">
+                    4
+                  </div>
+                  <h6>Download Result Report</h6>
+                </div>
+                <ul class="hiw-list">
+                  <li>Click <strong>"Download PDF"</strong> to save offline</li>
+                  <li>Cached results reload in seconds</li>
+                </ul>
               </div>
             </div>
-          </div>
+          </section>
+
+          <!-- ══════════════════════════════════════
+               TROUBLESHOOTING SECTION
+          ══════════════════════════════════════ -->
+          <section id="stillLoadingCard" class="troubleshoot-section">
+            <div class="troubleshoot-inner">
+              <div class="troubleshoot-left">
+                <h5 class="troubleshoot-title">
+                  <div class="troubleshoot-icon">⏳</div>
+                  Troubleshooting
+                </h5>
+                <ul class="troubleshoot-list">
+                  <li>
+                    <svg
+                      class="check-icon"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    <span
+                      ><strong>Don't refresh</strong> — first search may take up
+                      to 30 seconds</span
+                    >
+                  </li>
+                  <li>
+                    <svg
+                      class="check-icon"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    <span>Server may take time to wake up</span>
+                  </li>
+                  <li>
+                    <svg
+                      class="check-icon"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    <span
+                      ><strong>Double check your PIN</strong> — make sure it's
+                      correct</span
+                    >
+                  </li>
+                  <li>
+                    <svg
+                      class="check-icon"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    <span>Try again after a few seconds if it fails</span>
+                  </li>
+                  <li>
+                    <svg
+                      class="check-icon"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    <span
+                      >Weak internet can cause timeouts — check your
+                      connection</span
+                    >
+                  </li>
+                  <li>
+                    <svg
+                      class="check-icon"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                    <span
+                      >Second search is always
+                      <strong>much faster ⚡</strong></span
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="troubleshoot-right">
+                <div class="troubleshoot-card-preview">
+                  <div class="preview-bar"></div>
+                  <div class="preview-bar short"></div>
+                  <div class="preview-bar medium"></div>
+                  <div class="preview-bar short"></div>
+                  <div class="preview-play">▶</div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </main>
@@ -656,21 +438,27 @@
         background: white;
         color: #212020;
         padding: 16px 20px;
-        margin-top: 2rem;
+        margin: auto;
+        margin-top: 1rem;
         border-radius: 14px;
         display: flex;
-        justify-content: center;
-        gap: 40px;
-        flex-wrap: wrap;
         align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap;
+        gap: 20px;
+        max-width: 45%;
+        align-items: center;
+        box-shadow:
+          rgb(204, 219, 232) 3px 3px 6px 0px inset,
+          rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset;
       ">
       <div style="text-align: center">
         <div
           id="onlineCount"
-          style="font-size: 1.8rem; font-weight: 800; color: #34d399">
+          style="font-size: 1.3rem; font-weight: 800; color: #34d399">
           0
         </div>
-        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px">
+        <div style="font-size: 0.75rem; color: #696969; margin-top: 2px">
           👥 Online Now
         </div>
       </div>
@@ -678,10 +466,10 @@
       <div style="text-align: center">
         <div
           id="totalSearchCount"
-          style="font-size: 1.8rem; font-weight: 800; color: #60a5fa">
+          style="font-size: 1.3rem; font-weight: 800; color: #60a5fa">
           0
         </div>
-        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px">
+        <div style="font-size: 0.75rem; color: #696969; margin-top: 2px">
           ✅ Total Searches
         </div>
       </div>
@@ -691,7 +479,8 @@
     <footer class="bg-light text-center py-4 mt-5 border-top rounded-lg">
       <div class="">
         <p class="mb-1">
-          <strong>SmartResultMVR</strong> © 2026 - Academic Performance Portal
+          <strong>SmartResultMVR</strong> © 2026 <br />
+          Academic Performance Portal
         </p>
         <div class="mt-3">
           <a
@@ -742,6 +531,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- App script -->
     <script src="script.js"></script>
+    <!-- HTML2Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
       // ── Banner dismiss ──

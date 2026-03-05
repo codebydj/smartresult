@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 const resultController = require("../controllers/resultController");
-const dashboardController = require("../controllers/dashboardController");
 const validatePin = require("../middleware/validatePin");
 
 // ============================================

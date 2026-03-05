@@ -1,0 +1,274 @@
+/* ================================================================
+   RESPONSIVE — paste at the bottom of style2.css
+   Breakpoints: 768px · 480px · 380px · 320px
+   ================================================================ */
+
+/* ── 768px ── */
+@media (max-width: 768px) {
+  /* Navbar */
+  nav.navbar { padding: 0 12px; }
+  nav.navbar .navbar-brand { font-size: 1.1rem; }
+  #serverStatusBadge { font-size: 0.72rem; padding: 3px 9px; }
+
+  /* Hero */
+  .hero-section { padding: 30px 18px; margin-top: 16px; margin-bottom: 20px; border-radius: 12px; }
+  .hero-section h1 { font-size: 1.6rem; }
+  .hero-section .lead { font-size: 0.95rem; }
+  .hero-logo { width: 75% !important; }
+
+  /* Search */
+  #searchForm { flex-direction: column; gap: 10px;align-items: center; }
+  .search-input, .search-btn { width: 100%; }
+
+  /* Stats bar inside hero */
+  .hero-section > div[style*="max-width"] { max-width: 85% !important; }
+
+  /* Download button */
+  .download-btn { width: 170px; }
+
+  /* Loading overlay */
+  .loading-container { padding: 35px 30px; width: calc(100% - 48px); max-width: 340px; }
+  #loadingProgressBar { width: 180px; }
+
+  /* History panel */
+  .history-panel { width: 280px; }
+
+  /* Result / accordion / tables */
+  .result-card { padding: 15px; }
+  .accordion-item { margin-bottom: 12px; }
+  .table { font-size: 0.85rem; }
+  .table th, .table td { padding: 0.6rem; }
+  .status-badge { font-size: 0.75rem; padding: 5px 8px; }
+  .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.9rem; }
+
+  /* Semester select */
+  .form-select { width: 100%; }
+
+  /* Chart */
+  #sgpaChart { height: 220px; }
+
+  /* Why / HIW grids → 2 col */
+  .why-grid { grid-template-columns: repeat(2, 1fr); }
+  .hiw-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Troubleshoot → stack vertically */
+  .troubleshoot-inner { flex-direction: column; }
+  .troubleshoot-left { padding: 1.4rem 1.2rem; }
+  .troubleshoot-right {
+    width: 100%; min-width: unset;
+    border-left: none; border-top: 1px solid #e2e8f0;
+    padding: 1.2rem;
+  }
+
+  /* Section heading */
+  .section-heading { font-size: 1.45rem; }
+
+  /* Rank table */
+  #staticRankingTable table { font-size: 0.82rem; }
+  #staticRankingTable table th,
+  #staticRankingTable table td { padding: 7px 6px; }
+}
+
+/* ── 480px ── */
+@media (max-width: 480px) {
+  /* Navbar */
+  nav.navbar { padding: 0 10px; }
+  nav.navbar .navbar-brand { font-size: 0.85rem; }
+  .navbar-brand img { height: 30px !important; width: auto !important; }
+  #serverStatusBadge { font-size: 0.68rem; padding: 3px 7px; gap: 4px; }
+
+  /* Hero */
+  .hero-section { padding: 20px 12px; margin-top: 10px; }
+  .hero-section h1 { font-size: 1.2rem; }
+  .hero-section .lead { font-size: 0.87rem; }
+  .hero-logo { width: 85% !important; }
+
+  /* Stats bar */
+  .hero-section > div[style*="max-width"] {
+    max-width: 100% !important;
+    padding: 12px 14px !important;
+    gap: 14px !important;
+  }
+
+  /* Search */
+  .search-input { font-size: 0.9rem; padding: 10px 12px; max-width: 80%; height: 50px; }
+  .search-btn { padding: 10px 14px; font-size: 0.9rem; }
+
+  /* Download button */
+  .download-btn { width: 150px; height: 42px; }
+  .button-content { transform: translateY(-42px); }
+  .svg-container, .text-container { height: 42px; }
+
+  /* Tables / accordion */
+  .table { font-size: 0.75rem; }
+  .table th, .table td { padding: 0.5rem 0.4rem; }
+  .accordion-title { font-size: 0.9rem; }
+  .accordion-header { padding: 10px 12px; }
+  .accordion-body.open { padding: 12px; }
+  .result-card { padding: 12px 10px; }
+  h4 { font-size: 1rem; }
+
+  /* Loading */
+  .loading-container { padding: 24px 18px; gap: 14px; width: calc(100% - 32px); }
+  .spinner-modal { width: 48px; height: 48px; }
+  #loadingMessage { font-size: 0.9rem; }
+  #loadingProgressBar { width: 160px; }
+
+  /* History panel */
+  .history-panel { width: calc(100vw - 24px); right: -4px; }
+
+  /* Chart */
+  #sgpaChart { height: 180px; }
+
+  /* Why / HIW → 2 col tighter */
+  .why-grid, .hiw-grid { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+  .why-card, .hiw-card { padding: 1.1rem 0.8rem; }
+  .why-icon-wrap { width: 52px; height: 52px; }
+  .why-card h6, .hiw-card h6 { font-size: 0.85rem; }
+  .why-card p { font-size: 0.74rem; }
+  .section-heading { font-size: 1.2rem; margin-bottom: 1.1rem; }
+
+  /* Troubleshoot */
+  .troubleshoot-left { padding: 1.1rem 1rem; }
+  .troubleshoot-title { font-size: 1rem; }
+  .troubleshoot-list li { font-size: 0.8rem; }
+
+  /* Rank table */
+  #staticRankingTable { padding: 1rem; }
+  #staticRankingTable table { font-size: 0.78rem; }
+  #staticRankingTable table th,
+  #staticRankingTable table td { padding: 7px 5px; }
+
+  /* Footer */
+  footer { padding: 20px 12px !important; }
+  footer p { font-size: 0.85rem; }
+}
+
+/* ── 380px ── */
+@media (max-width: 380px) {
+  /* Navbar */
+  nav.navbar { padding: 0 8px; }
+  .navbar-brand img { height: 28px !important; }
+  nav.navbar .navbar-brand { font-size: 0.85rem; }
+  .nav-item .btn-sm { font-size: 0.75rem; padding: 3px 8px; }
+
+  /* Hero */
+  .hero-section { padding: 16px 10px; }
+  .hero-section h1 { font-size: 1.05rem; }
+  .hero-section .lead { font-size: 0.83rem; }
+  .hero-logo { width: 90% !important; }
+
+  /* Search */
+  .search-input { font-size: 0.85rem; padding: 9px 10px; }
+  .search-btn { padding: 9px 12px; font-size: 0.85rem; }
+
+  /* Stats bar */
+  .hero-section > div[style*="max-width"] {
+    max-width: 100% !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Why / HIW → still 2 col, tighter */
+  .why-grid, .hiw-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .why-card, .hiw-card { padding: 0.9rem 0.6rem; }
+  .why-icon-wrap { width: 44px; height: 44px; font-size: 1.5rem; }
+  .section-heading { font-size: 1.05rem; }
+
+  /* Rank table */
+  #staticRankingTable table { font-size: 0.72rem; }
+  #staticRankingTable table th,
+  #staticRankingTable table td { padding: 6px 4px; }
+
+  /* Loading */
+  .loading-container { padding: 20px 14px; }
+  #loadingProgressBar { width: 140px; }
+}
+
+/* ── 320px (minimum) ── */
+@media (max-width: 320px) {
+  /* Navbar — squeeze everything */
+  nav.navbar { padding: 0 6px; }
+  .navbar-brand img { height: 24px !important; }
+  nav.navbar .navbar-brand { font-size: 0.78rem; }
+  nav.navbar .navbar-brand small { display: none; }
+  .nav-item .btn-sm { font-size: 0.68rem; padding: 2px 7px; }
+  #serverStatusBadge { font-size: 0.62rem; padding: 2px 6px; }
+  #serverStatusBadge #statusText { display: none; } /* dot only */
+
+  /* Hero */
+  .hero-section { padding: 14px 8px; margin-top: 6px; border-radius: 10px; }
+  .hero-section h1 { font-size: 0.95rem; }
+  .hero-section .lead { font-size: 0.78rem; }
+  .hero-logo { width: 95% !important; }
+
+  /* Search */
+  .search-input { font-size: 0.8rem; padding: 8px 9px; }
+  .search-btn { padding: 8px 10px; font-size: 0.8rem; }
+  #searchForm { gap: 8px; }
+
+  /* Stats bar */
+  .hero-section > div[style*="max-width"] {
+    max-width: 100% !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Why / HIW → single column */
+  .why-grid, .hiw-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+  .why-card, .hiw-card { padding: 1rem; }
+  .why-icon-wrap { width: 42px; height: 42px; font-size: 1.4rem; }
+  .section-heading { font-size: 0.95rem; margin-bottom: 0.9rem; }
+  .why-card p { font-size: 0.72rem; }
+
+  /* Tables */
+  .table { font-size: 0.68rem; }
+  .table th, .table td { padding: 0.35rem 0.25rem; }
+
+  /* Result card */
+  .result-card { padding: 10px 8px; }
+  .result-card h4, h4 { font-size: 0.9rem; }
+  .accordion-header { padding: 8px 10px; }
+  .accordion-title { font-size: 0.8rem; }
+  .accordion-body.open { padding: 9px; }
+
+  /* Download button */
+  .download-btn { width: 130px; height: 38px; }
+  .button-content { transform: translateY(-38px); }
+  .svg-container, .text-container { height: 38px; }
+  .text-container .text { font-size: 11px; }
+
+  /* Loading */
+  .loading-container { padding: 18px 12px; gap: 12px; width: calc(100% - 20px); }
+  .spinner-modal { width: 40px; height: 40px; }
+  #loadingMessage { font-size: 0.82rem; }
+  #loadingProgressBar { width: 120px; height: 10px; }
+  #loadingTip { max-width: 240px; font-size: 0.76rem; }
+
+  /* History panel */
+  .history-panel { width: calc(100vw - 16px); right: -2px; padding: 8px; }
+  .history-pin { font-size: 0.85rem; }
+  .history-name { font-size: 0.75rem; }
+
+  /* Troubleshoot */
+  .troubleshoot-left { padding: 0.85rem 0.75rem; }
+  .troubleshoot-title { font-size: 0.88rem; }
+  .troubleshoot-list li { font-size: 0.74rem; gap: 6px; }
+  .troubleshoot-right { padding: 0.85rem; }
+  .check-icon { width: 13px; height: 13px; min-width: 13px; }
+
+  /* Rank table */
+  #staticRankingTable { padding: 0.75rem; border-radius: 6px; }
+  #staticRankingTable h5 { font-size: 0.85rem; }
+  #staticRankingTable table { font-size: 0.66rem; }
+  #staticRankingTable table th,
+  #staticRankingTable table td { padding: 5px 3px; }
+
+  /* Chart */
+  #sgpaChart { height: 150px; }
+
+  /* Footer */
+  footer { padding: 14px 8px !important; }
+  footer p { font-size: 0.78rem; }
+}

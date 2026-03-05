@@ -8,18 +8,9 @@ A production-ready full-stack web application for scraping and displaying studen
 
 - **Result Scraping**: Automated scraping of student results from external sources
 - **MongoDB Integration**: Store and manage search history
-- **Admin Authentication**: Secure JWT-based admin system
 - **PDF Generation**: Download results as PDF
 - **SGPA Analytics**: Visual graph representation of semester-wise SGPA
 - **Responsive UI**: Bootstrap 5 with modern design
-
-### Admin Features
-
-- **Dashboard**: Comprehensive statistics and analytics
-- **Search History**: Track all student searches
-- **Result Management**: View and manage all stored results
-- **Quick Insights**: Statistics on unique students, average CGPA, etc.
-- **Data Export**: Export search history as PDF
 
 ## 📋 Tech Stack
 
@@ -28,8 +19,6 @@ A production-ready full-stack web application for scraping and displaying studen
 - Node.js & Express.js
 - MongoDB & Mongoose
 - Puppeteer (Web Scraping)
-- JWT Authentication
-- BCrypt (Password Hashing)
 - PDFKit (PDF Generation)
 
 **Frontend:**
@@ -81,8 +70,6 @@ PORT=3000
 NODE_ENV=development
 MONGODB_URI=mongodb://localhost:27017/smartresult
 JWT_SECRET=your_secret_key_here
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
 ```
 
 4. **Start MongoDB**
@@ -108,8 +95,6 @@ npm start
 6. **Access the application**
 
 - Student Portal: http://localhost:3000
-- Admin Login: http://localhost:3000/admin-login.html
-- Admin Dashboard: http://localhost:3000/admin-dashboard.html
 
 ### Docker Setup (Recommended)
 
@@ -137,14 +122,10 @@ smartresult/
 ├── config/
 │   └── database.js          # MongoDB configuration
 ├── controllers/
-│   ├── authController.js    # Admin authentication
-│   ├── resultController.js  # Result management
-│   └── dashboardController.js # Dashboard statistics
+│   └── resultController.js  # Result management
 ├── middleware/
-│   ├── auth.js              # JWT verification
 │   └── errorHandler.js      # Error handling
 ├── models/
-│   ├── Admin.js             # Admin schema
 │   └── Result.js            # Result schema
 ├── routes/
 │   └── v1.js                # API v1 routes
@@ -156,11 +137,7 @@ smartresult/
 │   └── pdfGenerator.js      # PDF generation
 ├── public/
 │   ├── index.html           # Student portal
-│   ├── admin-login.html     # Admin login
-│   ├── admin-dashboard.html # Admin dashboard
 │   ├── app.js               # Student portal JS
-│   ├── admin-auth.js        # Admin auth JS
-│   ├── admin-dashboard.js   # Dashboard JS
 │   └── style.css            # Global styles
 ├── .env.example             # Environment template
 ├── .env                     # Environment variables
@@ -295,8 +272,6 @@ Authorization: Bearer {token}
    - Add `MONGODB_URI`: MongoDB Atlas connection string
    - Add `JWT_SECRET`: Strong secret key
    - Add `NODE_ENV`: `production`
-   - Add `ADMIN_USERNAME`: Admin username
-   - Add `ADMIN_PASSWORD`: Admin password
 
 5. **Deploy**
    - Click "Deploy"
@@ -320,8 +295,6 @@ Authorization: Bearer {token}
 
 5. **Set Environment Variables**
    - `JWT_SECRET`: Your secret key
-   - `ADMIN_USERNAME`: Admin username
-   - `ADMIN_PASSWORD`: Admin password
    - `NODE_ENV`: production
 
 6. **Deploy**
@@ -352,8 +325,6 @@ heroku addons:create mongolab:sandbox
 
 ```bash
 heroku config:set JWT_SECRET=your_secret_key
-heroku config:set ADMIN_USERNAME=admin
-heroku config:set ADMIN_PASSWORD=admin123
 ```
 
 5. **Deploy**

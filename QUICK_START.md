@@ -38,8 +38,6 @@ npm run dev
 ### Step 4: Access
 
 - 📱 Student Portal: http://localhost:3000
-- 🔐 Admin Login: http://localhost:3000/admin-login.html
-- 📊 Dashboard: http://localhost:3000/admin-dashboard.html (after login)
 
 ---
 
@@ -68,8 +66,6 @@ docker-compose down
    ```
    MONGODB_URI=your_mongodb_atlas_url
    JWT_SECRET=your_secret_key
-   ADMIN_USERNAME=admin
-   ADMIN_PASSWORD=admin123
    ```
 6. Deploy!
 
@@ -102,17 +98,6 @@ git push heroku main
 3. Click "Get Result"
 4. See mock results
 
-### Test Admin Features
-
-1. Go to http://localhost:3000/admin-login.html
-2. Click "Register here"
-3. Create admin account:
-   - Username: `testadmin`
-   - Email: `admin@test.com`
-   - Password: `Test@123`
-4. Login with credentials
-5. View dashboard with statistics
-
 ### Test PDF Download
 
 1. Search for a result
@@ -129,20 +114,7 @@ git push heroku main
 curl http://localhost:3000/api/v1/result?pin=123456
 ```
 
-### Admin Login
-
-```bash
-curl -X POST http://localhost:3000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
-```
-
-### Get Dashboard (with token)
-
-```bash
-curl http://localhost:3000/api/v1/admin/dashboard \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
+_Admin endpoints have been removed from this build; only public result APIs are available._
 
 ---
 
@@ -160,9 +132,7 @@ MONGODB_URI=mongodb://localhost:27017/smartresult
 JWT_SECRET=your_super_secret_key       # Change this in production!
 JWT_EXPIRE=7d                          # Token expiration time
 
-# Admin (for first-time setup)
-ADMIN_USERNAME=admin                   # Default admin username
-ADMIN_PASSWORD=admin123                # Default admin password
+# (no admin settings required)
 ```
 
 ---
