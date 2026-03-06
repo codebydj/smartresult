@@ -46,7 +46,7 @@ app.use(
         ],
       },
     },
-  })
+  }),
 );
 
 app.use(
@@ -57,7 +57,7 @@ app.use(
       /\.vercel\.app$/,
     ],
     credentials: true,
-  })
+  }),
 );
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -86,12 +86,17 @@ if (!process.env.MONGODB_URI) {
 }
 
 // ============================================
-// LIVE STATS ROUTE ← different path to avoid v1 router conflict
+// LIVE STATS ROUTE
 // ============================================
 app.get("/stats/live", async (req, res) => {
   try {
-    const count = await Result.countDocuments();
-    res.json({ onlineUsers, totalSearches: count });
+    const Stats = require("./models/Stats");
+    const stats = await Stats.findOne({ _id: "global" }); // ✅ findOne not findById
+    console.log("📊 Stats doc:", stats);
+    res.json({
+      onlineUsers,
+      totalSearches: stats?.totalSearches || 0, // ✅ real count
+    });
   } catch {
     res.json({ onlineUsers, totalSearches: 0 });
   }
@@ -190,13 +195,18 @@ io.on("connection", (socket) => {
 // KEEP ALIVE
 // ============================================
 const RENDER_URL = "https://smartresult-backend.onrender.com/health";
-setInterval(() => {
-  https.get(RENDER_URL, (res) => {
-    console.log(`Keep-alive ping: ${res.statusCode}`);
-  }).on("error", (err) => {
-    console.log("Keep-alive error:", err.message);
-  });
-}, 10 * 60 * 1000);
+setInterval(
+  () => {
+    https
+      .get(RENDER_URL, (res) => {
+        console.log(`Keep-alive ping: ${res.statusCode}`);
+      })
+      .on("error", (err) => {
+        console.log("Keep-alive error:", err.message);
+      });
+  },
+  10 * 60 * 1000,
+);
 
 // ============================================
 // GRACEFUL SHUTDOWN
@@ -210,7 +220,9 @@ const shutdown = () => {
       process.exit(0);
     });
   });
-  setTimeout(() => { process.exit(1); }, 10000);
+  setTimeout(() => {
+    process.exit(1);
+  }, 10000);
 };
 
 process.on("SIGTERM", shutdown);

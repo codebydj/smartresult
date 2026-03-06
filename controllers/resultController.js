@@ -1,5 +1,6 @@
 const { getResult } = require("../services/scraperService");
 const Result = require("../models/Result");
+const Stats = require("../models/Stats"); // ✅ ADD THIS
 const { generateResultPDF } = require("../utils/pdfGenerator");
 const fs = require("fs");
 const path = require("path");
@@ -13,7 +14,6 @@ const mongoose = require("mongoose");
  * @route POST/GET /api/v1/result
  */
 exports.getResult = async (req, res, next) => {
-  // Prefer sanitized pin from middleware
   const pin = req.cleanPin || req.body?.pin || req.query?.pin;
 
   if (!pin) {
@@ -21,9 +21,22 @@ exports.getResult = async (req, res, next) => {
   }
 
   console.log("🔍 Fetching result for PIN:", pin);
+
+  // ✅ INCREMENT TOTAL SEARCHES ON EVERY REQUEST (same PIN or not)
+  try {
+    await Stats.findOneAndUpdate(
+      { _id: "global" },
+      { $inc: { totalSearches: 1 } },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    console.log("✅ Total searches now:", updated.totalSearches);
+  } catch (statsErr) {
+    console.warn("⚠️ Stats update failed:", statsErr.message);
+  }
+
   try {
     // 1) Check cache (MongoDB) - if available and fresh (<10 minutes), return it
-    const freshMs = 10 * 60 * 1000; // 10 minutes
+    const freshMs = 10 * 60 * 1000;
     if (mongoose.connection.readyState === 1) {
       const existing = await Result.findOne({ pin: pin.toUpperCase() }).lean();
       if (existing && existing.createdAt) {
@@ -126,7 +139,7 @@ exports.getResult = async (req, res, next) => {
         storedResult = updated || resultData;
       } catch (dbErr) {
         console.warn("⚠️ Database save/update failed:", dbErr.message);
-        storedResult = resultData; // return scraped data
+        storedResult = resultData;
       }
     }
 
@@ -178,7 +191,6 @@ exports.downloadResultPDF = async (req, res, next) => {
     const pin = (req.params.pin || "").trim().toUpperCase();
     let resultData = null;
 
-    // 1. Try to get from DB if connected
     if (mongoose.connection.readyState === 1) {
       const result = await Result.findOne({ pin: pin });
       if (result) {
@@ -186,7 +198,6 @@ exports.downloadResultPDF = async (req, res, next) => {
       }
     }
 
-    // 2. If not in DB or DB down, scrape it on the fly
     if (!resultData) {
       console.log(
         `PDF Download: Result not in DB (or DB down), scraping for PIN: ${pin}`,
@@ -216,16 +227,12 @@ exports.downloadResultPDF = async (req, res, next) => {
       return res.status(404).json({ error: "Result not found" });
     }
 
-    // Generate PDF
     const filePath = await generateResultPDF(resultData);
 
-    // Send file
     res.download(filePath, `Result_${pin}.pdf`, (err) => {
       if (err) {
         console.error("Error sending file:", err);
       }
-
-      // Delete temp file after sending
       fs.unlink(filePath, (unlinkErr) => {
         if (unlinkErr) console.error("Error deleting temp file:", unlinkErr);
       });
