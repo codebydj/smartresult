@@ -79,7 +79,7 @@
 
   /* Hero */
   .hero-section { padding: 20px 12px; margin-top: 10px; }
-  .hero-section h1 { font-size: 1.2rem; }
+  .hero-section h1 { font-size: 1.4rem; }
   .hero-section .lead { font-size: 0.87rem; }
   .hero-logo { width: 85% !important; }
 
@@ -154,7 +154,7 @@
 
   /* Hero */
   .hero-section { padding: 16px 10px; }
-  .hero-section h1 { font-size: 1.05rem; }
+  .hero-section h1 { font-size: 1.25rem; }
   .hero-section .lead { font-size: 0.83rem; }
   .hero-logo { width: 90% !important; }
 
@@ -198,7 +198,7 @@
 
   /* Hero */
   .hero-section { padding: 14px 8px; margin-top: 6px; border-radius: 10px; }
-  .hero-section h1 { font-size: 0.95rem; }
+  .hero-section h1 { font-size: 1.25rem; }
   .hero-section .lead { font-size: 0.78rem; }
   .hero-logo { width: 95% !important; }
 
