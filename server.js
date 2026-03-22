@@ -11,6 +11,7 @@ const errorHandler = require("./middleware/errorHandler");
 const apiRoutes = require("./routes/v1");
 const { getResult } = require("./services/scraperService");
 const Result = require("./models/Result");
+const Stats = require("./models/Stats"); // ✅ ADD THIS
 
 const app = express();
 
@@ -90,14 +91,13 @@ if (!process.env.MONGODB_URI) {
 // ============================================
 app.get("/stats/live", async (req, res) => {
   try {
-    const Stats = require("./models/Stats");
-    const stats = await Stats.findOne({ _id: "global" }); // ✅ findOne not findById
-    console.log("📊 Stats doc:", stats);
+    const stats = await Stats.findOne({ _id: "global" }); // ✅ uses imported Stats
     res.json({
       onlineUsers,
-      totalSearches: stats?.totalSearches || 0, // ✅ real count
+      totalSearches: stats?.totalSearches || 0,
     });
-  } catch {
+  } catch (err) {
+    console.log("❌ Stats error:", err.message);
     res.json({ onlineUsers, totalSearches: 0 });
   }
 });

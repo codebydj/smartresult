@@ -1,18 +1,11 @@
 const { getResult } = require("../services/scraperService");
 const Result = require("../models/Result");
-const Stats = require("../models/Stats"); // ✅ ADD THIS
+const Stats = require("../models/Stats");
 const { generateResultPDF } = require("../utils/pdfGenerator");
 const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 
-/**
- * Controller: getResult
- * - Validates and uses sanitized PIN from middleware
- * - Returns cached DB result if younger than 10 minutes
- * - Otherwise scrapes fresh result, upserts into MongoDB and returns it
- * @route POST/GET /api/v1/result
- */
 exports.getResult = async (req, res, next) => {
   const pin = req.cleanPin || req.body?.pin || req.query?.pin;
 
@@ -22,20 +15,19 @@ exports.getResult = async (req, res, next) => {
 
   console.log("🔍 Fetching result for PIN:", pin);
 
-  // ✅ INCREMENT TOTAL SEARCHES ON EVERY REQUEST (same PIN or not)
+  // ✅ FIXED: capture return value as `statsDoc` (not `updated`)
   try {
-    await Stats.findOneAndUpdate(
+    const statsDoc = await Stats.findOneAndUpdate(
       { _id: "global" },
       { $inc: { totalSearches: 1 } },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
-    console.log("✅ Total searches now:", updated.totalSearches);
+    console.log("✅ Total searches now:", statsDoc.totalSearches);
   } catch (statsErr) {
     console.warn("⚠️ Stats update failed:", statsErr.message);
   }
 
   try {
-    // 1) Check cache (MongoDB) - if available and fresh (<10 minutes), return it
     const freshMs = 10 * 60 * 1000;
     if (mongoose.connection.readyState === 1) {
       const existing = await Result.findOne({ pin: pin.toUpperCase() }).lean();
@@ -48,13 +40,11 @@ exports.getResult = async (req, res, next) => {
       }
     }
 
-    // 2) Fetch from scraper / mock
     let scrapedData;
     if (process.env.MOCK_MODE === "true") {
       console.log("📋 Using MOCK MODE - returning test data");
       scrapedData = {
-        studentName:
-          "Mock Student - " + String(pin).substring(0, 5).toUpperCase(),
+        studentName: "Mock Student - " + String(pin).substring(0, 5).toUpperCase(),
         name: "Mock Student",
         rollNumber: "MOCK001",
         semesters: [
@@ -80,7 +70,6 @@ exports.getResult = async (req, res, next) => {
       scrapedData = await getResult(pin);
     }
 
-    // Basic validation on scraped output
     if (!scrapedData || !scrapedData.studentName) {
       return res.status(404).json({
         success: false,
@@ -95,7 +84,6 @@ exports.getResult = async (req, res, next) => {
       });
     }
 
-    // Prepare DB document
     const resultData = {
       pin: String(pin).toUpperCase(),
       name: scrapedData.name || scrapedData.studentName || "N/A",
@@ -115,7 +103,6 @@ exports.getResult = async (req, res, next) => {
       resultData.totalSemesters = scrapedData.semesters.length;
     }
 
-    // compute failed count
     let failedCount = 0;
     scrapedData.semesters.forEach((sem) => {
       (sem.subjects || []).forEach((sub) => {
@@ -127,14 +114,13 @@ exports.getResult = async (req, res, next) => {
     });
     resultData.failedCount = failedCount;
 
-    // Save to DB if connected (upsert)
     let storedResult = resultData;
     if (mongoose.connection.readyState === 1) {
       try {
         const updated = await Result.findOneAndUpdate(
           { pin: resultData.pin },
           { $set: resultData },
-          { new: true, upsert: true, setDefaultsOnInsert: true },
+          { new: true, upsert: true, setDefaultsOnInsert: true }
         ).lean();
         storedResult = updated || resultData;
       } catch (dbErr) {
@@ -150,32 +136,22 @@ exports.getResult = async (req, res, next) => {
   }
 };
 
-// Get result by PIN
 exports.getResultByPin = async (req, res, next) => {
   try {
     const { pin } = req.params;
-
     if (!pin) {
-      return res
-        .status(400)
-        .json({ success: false, message: "PIN is required" });
+      return res.status(400).json({ success: false, message: "PIN is required" });
     }
-
     const result = await Result.findOne({ pin: pin.toUpperCase() });
-
     if (!result) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Result not found" });
+      return res.status(404).json({ success: false, message: "Result not found" });
     }
-
     res.json({ success: true, data: result });
   } catch (error) {
     next(error);
   }
 };
 
-// Get public stats (Total results checked)
 exports.getPublicStats = async (req, res) => {
   try {
     const count = await Result.countDocuments();
@@ -185,7 +161,6 @@ exports.getPublicStats = async (req, res) => {
   }
 };
 
-// Download result as PDF
 exports.downloadResultPDF = async (req, res, next) => {
   try {
     const pin = (req.params.pin || "").trim().toUpperCase();
@@ -193,15 +168,11 @@ exports.downloadResultPDF = async (req, res, next) => {
 
     if (mongoose.connection.readyState === 1) {
       const result = await Result.findOne({ pin: pin });
-      if (result) {
-        resultData = result.toObject();
-      }
+      if (result) resultData = result.toObject();
     }
 
     if (!resultData) {
-      console.log(
-        `PDF Download: Result not in DB (or DB down), scraping for PIN: ${pin}`,
-      );
+      console.log(`PDF Download: Result not in DB (or DB down), scraping for PIN: ${pin}`);
       try {
         const scrapedData = await getResult(pin);
         resultData = {
@@ -213,26 +184,16 @@ exports.downloadResultPDF = async (req, res, next) => {
           scrapedAt: new Date(),
         };
       } catch (scrapeErr) {
-        console.error(
-          "Scrape failed during PDF generation:",
-          scrapeErr.message,
-        );
-        return res
-          .status(404)
-          .json({ error: "Result not found and could not be scraped." });
+        console.error("Scrape failed during PDF generation:", scrapeErr.message);
+        return res.status(404).json({ error: "Result not found and could not be scraped." });
       }
     }
 
-    if (!resultData) {
-      return res.status(404).json({ error: "Result not found" });
-    }
+    if (!resultData) return res.status(404).json({ error: "Result not found" });
 
     const filePath = await generateResultPDF(resultData);
-
     res.download(filePath, `Result_${pin}.pdf`, (err) => {
-      if (err) {
-        console.error("Error sending file:", err);
-      }
+      if (err) console.error("Error sending file:", err);
       fs.unlink(filePath, (unlinkErr) => {
         if (unlinkErr) console.error("Error deleting temp file:", unlinkErr);
       });
@@ -242,7 +203,6 @@ exports.downloadResultPDF = async (req, res, next) => {
   }
 };
 
-// Test endpoint with sample data (for debugging)
 exports.getTestResult = async (req, res) => {
   res.json({
     message: "Test result data",
@@ -257,24 +217,8 @@ exports.getTestResult = async (req, res) => {
           sgpa: "8.5",
           cgpa: "8.5",
           subjects: [
-            {
-              subjectCode: "CS101",
-              subjectName: "Programming Fundamentals",
-              gradePoint: "9",
-              grade: "A",
-              status: "Passed",
-              credit: "4",
-              points: "36",
-            },
-            {
-              subjectCode: "CS102",
-              subjectName: "Data Structures",
-              gradePoint: "8",
-              grade: "B",
-              status: "Passed",
-              credit: "3",
-              points: "24",
-            },
+            { subjectCode: "CS101", subjectName: "Programming Fundamentals", gradePoint: "9", grade: "A", status: "Passed", credit: "4", points: "36" },
+            { subjectCode: "CS102", subjectName: "Data Structures", gradePoint: "8", grade: "B", status: "Passed", credit: "3", points: "24" },
           ],
         },
       ],
