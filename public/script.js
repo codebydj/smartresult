@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const historyPanel = document.getElementById("historyPanel");
 
   let chart = null;
-  const PIN_REGEX = /^[0-9A-Z]{4,}$/; // frontend len flexible; backend enforces full rule
+  const PIN_REGEX = /^[0-9A-Z]{4,}$/;
 
   function toUpper(s) {
     return String(s || "").toUpperCase();
@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function busy(state) {
     const overlay = document.getElementById("loadingOverlay");
     if (overlay) overlay.style.display = state ? "flex" : "none";
-    // ✅ loading animation
     if (state && window.startLoadingAnimation) window.startLoadingAnimation();
     if (!state && window.stopLoadingAnimation) window.stopLoadingAnimation();
     if (submitBtn) {
@@ -35,6 +34,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.Swal)
       Swal.fire({ icon: "error", title, text, confirmButtonColor: "#2563EB" });
     else alert(text);
+  }
+
+  // ✅ Load live stats (online users + total searches)
+  async function loadLiveStats() {
+    try {
+      const res = await fetch(
+        "https://smartresult-backend.onrender.com/api/v1/result/stats/live",
+      );
+      const data = await res.json();
+      const onlineEl = document.getElementById("onlineCount");
+      const totalEl = document.getElementById("totalSearchCount");
+      if (onlineEl) onlineEl.textContent = data.onlineUsers || 0;
+      if (totalEl)
+        totalEl.textContent = (data.totalSearches || 0).toLocaleString();
+    } catch (err) {
+      console.log("Stats fetch failed:", err.message);
+    }
   }
 
   function saveHistory(pin, name) {
@@ -87,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
         )
         .join("") +
       '<small class="text-muted ms-2">stores last 5 searches</small><div class="mt-2 d-flex justify-content-end"><button id="clearHistoryBtn" class="btn btn-sm btn-outline-secondary">Clear History</button></div>';
-    // attach events
     historyPanel.querySelectorAll(".history-item").forEach((el) =>
       el.addEventListener("click", () => {
         const p = el.getAttribute("data-pin");
@@ -124,16 +139,10 @@ document.addEventListener("DOMContentLoaded", () => {
       historyPanel.style.display = "none";
   });
 
-  // Gaming rank system
   function getRank(cgpa) {
     const val = parseFloat(cgpa || 0);
     if (val >= 9.5)
-      return {
-        name: "Conqueror/Heroic",
-        emoji: "",
-        badge: "🔥",
-        color: "#FFD700",
-      };
+      return { name: "Conqueror/Heroic", emoji: "", badge: "🔥", color: "#FFD700" };
     if (val >= 8.5)
       return { name: "Diamond", emoji: "💎", badge: "💎", color: "#00CED1" };
     if (val >= 7.5)
@@ -152,12 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!rankTable) return;
 
     const ranks = [
-      {
-        range: "9.5 – 10",
-        name: "Conqueror/Heroic",
-        emoji: "👑",
-        badge: "🏆🔥",
-      },
+      { range: "9.5 – 10", name: "Conqueror/Heroic", emoji: "👑", badge: "🏆🔥" },
       { range: "8.5 – 9.4", name: "Diamond", emoji: "💎", badge: "💎" },
       { range: "7.5 – 8.4", name: "Platinum", emoji: "🟣", badge: "🟣" },
       { range: "6.5 – 7.4", name: "Gold", emoji: "🟡", badge: "🟡" },
@@ -195,32 +199,21 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Render accordion for semesters
-  // helpers for sanitizing numeric values that may be placeholders
   function normalizeNumber(val) {
     const n = parseFloat(String(val || "").replace(/[^0-9.\-]/g, ""));
     if (isNaN(n)) return NaN;
-    // treat 999 as missing -> zero
     if (n === 999) return 0;
     return n;
   }
 
   function isFailed(sub) {
     if (!sub) return false;
-    const grade = String(sub.grade || "")
-      .trim()
-      .toUpperCase();
-    // treat explicit F or FAIL as failure
+    const grade = String(sub.grade || "").trim().toUpperCase();
     if (grade === "F" || grade === "FAIL") return true;
-    // if the record says COMPLETED it's not a failure
     if (grade === "COMPLETED") return false;
-    // status like 'Absent' or contains fail
-    const status = String(sub.status || "")
-      .trim()
-      .toLowerCase();
+    const status = String(sub.status || "").trim().toLowerCase();
     if (status && (status.includes("absent") || status.includes("fail")))
       return true;
-    // treat explicit zero as failure; ignore 999 placeholders here
     const vals = [sub.marks, sub.gradePoint, sub.points, sub.total];
     for (const v of vals) {
       const raw = parseFloat(String(v || "").replace(/[^0-9.\-]/g, ""));
@@ -236,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
     acc.querySelectorAll(".accordion-item")?.forEach((n) => n.remove());
     semesters.forEach((sem, idx) => {
       const subjects = sem.subjects || [];
-      // count failures
       const failCount = subjects.reduce((c, s) => (isFailed(s) ? c + 1 : c), 0);
       const failBadge =
         failCount > 0
@@ -270,7 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const rows = subjects
         .map((s) => {
           const failed = isFailed(s);
-          // display grade point/total normalized, convert 999->0
           const gpNum = normalizeNumber(s.gradePoint ?? s.total ?? "");
           const gpText = isNaN(gpNum) ? "" : gpNum.toString();
           const creditText = (() => {
@@ -294,14 +285,11 @@ document.addEventListener("DOMContentLoaded", () => {
       item.appendChild(header);
       item.appendChild(body);
       acc.appendChild(item);
-      // click behavior
       header.addEventListener("click", () => {
-        // close others
         acc.querySelectorAll(".accordion-body").forEach((b) => {
           if (b !== body) {
             b.style.maxHeight = 0;
             b.classList.remove("open");
-            // also reset arrow on other headers
             const h = b.previousElementSibling;
             if (h) h.classList.remove("open");
           }
@@ -318,11 +306,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         updateChartForOpenSemester();
       });
-      // Share button click
       const shareBtn = header.querySelector(".share-sem-btn");
       if (shareBtn) {
         shareBtn.addEventListener("click", (e) => {
-          e.stopPropagation(); // don't open accordion
+          e.stopPropagation();
           const semIdx = parseInt(shareBtn.getAttribute("data-idx"));
           const semData = (window.lastSemesters || [])[semIdx];
           const studentName =
@@ -379,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     resultDiv.innerHTML = "";
     resultDiv.appendChild(container);
-    // compute total grade points and credits
     try {
       const semesters = data.semesters || [];
       let totalPoints = 0;
@@ -400,21 +386,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const tEl = container.querySelector("#totalGradePoints");
       if (tEl)
         tEl.innerText = `TOTAL GRADE POINTS: ${totalPoints.toFixed(2)} / ${totalCredits.toFixed(2)}`;
-    } catch (e) {
-      /* ignore */
-    }
+    } catch (e) {}
     renderAccordion(data.semesters || []);
 
     resultContainer.style.display = "block";
     graphSection.style.display = "block";
 
-    // Hide static ranking table and show result-specific ranking below graph
     const staticRankingTable = document.getElementById("staticRankingTable");
     if (staticRankingTable) {
       staticRankingTable.style.display = "none";
     }
 
-    // Add ranking table below graph section
     let rankingTableDiv = document.getElementById("resultRankingTable");
     if (!rankingTableDiv) {
       rankingTableDiv = document.createElement("div");
@@ -434,11 +416,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const v = parseFloat(String(s.sgpa || ""));
       return isNaN(v) ? null : v;
     });
-    // destroy
     if (chart) {
-      try {
-        chart.destroy();
-      } catch (e) {}
+      try { chart.destroy(); } catch (e) {}
       chart = null;
     }
     const ctx = sgpaCanvas.getContext("2d");
@@ -449,9 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "bar",
       data: {
         labels,
-        datasets: [
-          { label: "SGPA", data, backgroundColor: grad, borderRadius: 6 },
-        ],
+        datasets: [{ label: "SGPA", data, backgroundColor: grad, borderRadius: 6 }],
       },
       options: {
         responsive: true,
@@ -476,16 +453,12 @@ document.addEventListener("DOMContentLoaded", () => {
       (s) => s.subjectCode || s.subjectName || "",
     );
     const data = (subjects || []).map((s) => {
-      let v = normalizeNumber(
-        s.marks ?? s.gradePoint ?? s.points ?? s.total ?? "",
-      );
+      let v = normalizeNumber(s.marks ?? s.gradePoint ?? s.points ?? s.total ?? "");
       if (isNaN(v)) v = null;
       return v;
     });
     if (chart) {
-      try {
-        chart.destroy();
-      } catch (e) {}
+      try { chart.destroy(); } catch (e) {}
       chart = null;
     }
     const ctx = sgpaCanvas.getContext("2d");
@@ -496,9 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: "bar",
       data: {
         labels,
-        datasets: [
-          { label: "Marks", data, backgroundColor: grad, borderRadius: 6 },
-        ],
+        datasets: [{ label: "Marks", data, backgroundColor: grad, borderRadius: 6 }],
       },
       options: {
         responsive: true,
@@ -520,7 +491,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function populateSemesterFilter(selectedIdx) {
     if (!semesterFilter) return;
     const list = window.lastSemesters || [];
-    // always include full set of options
     semesterFilter.innerHTML =
       '<option value="all">All</option>' +
       list
@@ -548,15 +518,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
     }
-    // no open semester -> default overall
     buildBarChart(window.lastSemesters || []);
     populateSemesterFilter();
     updatePerfText();
   }
 
-  // always compare the first two (latest) semesters; idx parameter is ignored since
-  // the requirement is to show improvement/decrease based on the most recent pair.
-  function updatePerfText(/* idx */) {
+  function updatePerfText() {
     const perfEl = document.getElementById("perfText");
     if (!perfEl) return;
     let html = "";
@@ -601,7 +568,6 @@ document.addEventListener("DOMContentLoaded", () => {
       buildBarChart(data.semesters || []);
       window.lastSemesters = data.semesters || [];
       updatePerfText();
-      // populate filter using centralized helper
       populateSemesterFilter();
       if (downloadPdfBtn) {
         downloadPdfBtn.onclick = () => {
@@ -612,6 +578,10 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
       saveHistory(data.pin, data.studentName || data.name || "");
+
+      // ✅ REFRESH COUNT ON SCREEN AFTER EVERY SEARCH
+      await loadLiveStats();
+
     } catch (err) {
       console.error(err);
       alertError("Server Error", "Failed to fetch result");
@@ -651,7 +621,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   async function shareSemesterAsImage(sem, studentName, cgpa) {
-    // Create a hidden card to screenshot
     const card = document.createElement("div");
     card.id = "shareCard";
     card.style.cssText = `
@@ -683,7 +652,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
 
     card.innerHTML = `
-    <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div>
         <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;">SMARTRESULTMVR</div>
@@ -691,8 +659,6 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div style="font-size:2rem;">${rank.emoji || "🎓"}</div>
     </div>
-
-    <!-- Semester Info -->
     <div style="background:rgba(255,255,255,0.07);border-radius:12px;padding:14px;margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
@@ -710,14 +676,10 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       ${failCount > 0 ? `<div style="margin-top:8px;color:#f87171;font-size:0.78rem;font-weight:600;">⚠️ ${failCount} subject(s) failed</div>` : `<div style="margin-top:8px;color:#34d399;font-size:0.78rem;font-weight:600;">✅ All subjects passed</div>`}
     </div>
-
-    <!-- Subjects -->
     <div style="margin-bottom:16px;">
       <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;margin-bottom:8px;">SUBJECTS</div>
       ${subjectRows}
     </div>
-
-    <!-- Footer -->
     <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);">
       <div style="font-size:0.7rem;color:#64748b;">smartresultmvr.vercel.app</div>
     </div>
@@ -728,11 +690,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const canvas = await html2canvas(card, {
         backgroundColor: null,
-        scale: 2, // high resolution
+        scale: 2,
         useCORS: true,
       });
-
-      // Download
       const link = document.createElement("a");
       link.download = `SmartResult_Sem${sem.semester}_${studentName || "result"}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -745,101 +705,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // share card gneraterator
-  async function shareSemesterAsImage(sem, studentName, cgpa) {
-    // Create a hidden card to screenshot
-    const card = document.createElement("div");
-    card.id = "shareCard";
-    card.style.cssText = `
-    position: fixed;
-    left: -9999px;
-    top: 0;
-    width: 400px;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    border-radius: 20px;
-    padding: 28px;
-    color: white;
-    font-family: Inter, sans-serif;
-    z-index: -1;
-  `;
-
-    const rank = getRank(sem.sgpa);
-    const subjects = sem.subjects || [];
-    const failCount = subjects.filter((s) => isFailed(s)).length;
-
-    const subjectRows = subjects
-      .map(
-        (s) => `
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:0.78rem;">
-      <span style="color:#cbd5e1;max-width:220px;">${s.subjectName || s.subjectCode || ""}</span>
-      <span style="font-weight:700;color:${isFailed(s) ? "#f87171" : "#34d399"};">${s.grade || ""}</span>
-    </div>
-  `,
-      )
-      .join("");
-
-    card.innerHTML = `
-    <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-      <div>
-        <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;">SMARTRESULTMVR</div>
-        <div style="font-size:1.1rem;font-weight:800;margin-top:2px;">${studentName || "Student"}</div>
-      </div>
-      <div style="font-size:2rem;">${rank.emoji || "🎓"}</div>
-    </div>
-
-    <!-- Semester Info -->
-    <div style="background:rgba(255,255,255,0.07);border-radius:12px;padding:14px;margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:0.7rem;color:#94a3b8;">SEMESTER</div>
-          <div style="font-size:1.4rem;font-weight:800;">${sem.semester}</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:0.7rem;color:#94a3b8;">SGPA</div>
-          <div style="font-size:2rem;font-weight:800;color:#60a5fa;">${sem.sgpa || "N/A"}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:0.7rem;color:#94a3b8;">RANK</div>
-          <div style="font-size:0.9rem;font-weight:700;color:${rank.color || "#fff"};">${rank.name}</div>
-        </div>
-      </div>
-      ${failCount > 0 ? `<div style="margin-top:8px;color:#f87171;font-size:0.78rem;font-weight:600;">⚠️ ${failCount} subject(s) failed</div>` : `<div style="margin-top:8px;color:#34d399;font-size:0.78rem;font-weight:600;">✅ All subjects passed</div>`}
-    </div>
-
-    <!-- Subjects -->
-    <div style="margin-bottom:16px;">
-      <div style="font-size:0.7rem;color:#94a3b8;letter-spacing:1px;margin-bottom:8px;">SUBJECTS</div>
-      ${subjectRows}
-    </div>
-
-    <!-- Footer -->
-    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1);">
-      <div style="font-size:0.7rem;color:#64748b;">smartresultmvr.vercel.app</div>
-    </div>
-  `;
-
-    document.body.appendChild(card);
-
-    try {
-      const canvas = await html2canvas(card, {
-        backgroundColor: null,
-        scale: 2, // high resolution
-        useCORS: true,
-      });
-
-      // Download
-      const link = document.createElement("a");
-      link.download = `SmartResult_Sem${sem.semester}_${studentName || "result"}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch (err) {
-      console.error("Share failed:", err);
-      alert("Failed to generate image. Try again.");
-    } finally {
-      document.body.removeChild(card);
-    }
-  }
+  // ✅ Load stats on page load
+  loadLiveStats();
 
   // initialize history on load
   renderHistory();
