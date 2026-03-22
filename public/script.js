@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadLiveStats() {
     try {
       const res = await fetch(
-        "https://smartresult-backend.onrender.com/api/v1/result/stats/live",
+        "https://smartresult-backend.onrender.com/stats/live",
       );
       const data = await res.json();
       const onlineEl = document.getElementById("onlineCount");

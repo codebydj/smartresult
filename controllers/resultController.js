@@ -15,16 +15,18 @@ exports.getResult = async (req, res, next) => {
 
   console.log("🔍 Fetching result for PIN:", pin);
 
-  // ✅ FIXED: capture return value as `statsDoc` (not `updated`)
-  try {
-    const statsDoc = await Stats.findOneAndUpdate(
-      { _id: "global" },
-      { $inc: { totalSearches: 1 } },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
-    console.log("✅ Total searches now:", statsDoc.totalSearches);
-  } catch (statsErr) {
-    console.warn("⚠️ Stats update failed:", statsErr.message);
+  // ✅ ONLY COUNT POST REQUESTS — prevents double counting
+  if (req.method === "POST") {
+    try {
+      const statsDoc = await Stats.findOneAndUpdate(
+        { _id: "global" },
+        { $inc: { totalSearches: 1 } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      console.log("✅ Total searches now:", statsDoc.totalSearches);
+    } catch (statsErr) {
+      console.warn("⚠️ Stats update failed:", statsErr.message);
+    }
   }
 
   try {
